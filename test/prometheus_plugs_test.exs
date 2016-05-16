@@ -1,6 +1,6 @@
-defmodule PrometheusPlugTest do
+defmodule PrometheusPlugsTest do
   use ExUnit.Case
-  doctest PrometheusPlug
+  doctest PrometheusPlugs
 
   test "the truth" do
     assert 1 + 1 == 2
