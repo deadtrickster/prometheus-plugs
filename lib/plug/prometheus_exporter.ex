@@ -1,6 +1,8 @@
 defmodule Plug.PrometheusExporter do
   @moduledoc """
   Exports Prometheus metrics in text format
+
+  plug Plug.PrometheusCollector
   """
 
   import Plug.Conn

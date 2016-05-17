@@ -4,7 +4,7 @@ defmodule Plug.PrometheusCollector do
 
   To use it, just plug it into the desired module.
 
-  plug Plug.Prometheus
+  plug Plug.PrometheusCollector
   """
 
   alias Plug.Conn
