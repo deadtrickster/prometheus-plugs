@@ -1,8 +1,9 @@
 defmodule Plug.PrometheusExporter do
   @moduledoc """
-  Exports Prometheus metrics in text format
-
-  plug Plug.PrometheusCollector
+  Exports metrics in text format via configurable endpoint:
+  ``` elixir
+  plug Plug.PrometheusExporter, [path: "/prom/metrics"]  # default is /metrics
+  ```
   """
 
   import Plug.Conn
