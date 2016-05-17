@@ -1,4 +1,4 @@
-# Prometheus Plugs [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)]()
+# Prometheus Plugs [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs)
 
 Elixir plugs for [prometheus.erl](https://github.com/deadtrickster/prometheus.erl)
 
