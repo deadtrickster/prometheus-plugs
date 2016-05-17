@@ -4,7 +4,7 @@ Elixir plugs for [prometheus.erl](https://github.com/deadtrickster/prometheus.er
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+The package can be installed as:
 
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
