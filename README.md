@@ -2,6 +2,8 @@
 
 Elixir plugs for [prometheus.erl](https://github.com/deadtrickster/prometheus.erl)
 
+***TL;DR*** [Example app](https://github.com/deadtrickster/prometheus-plugs-example)
+
 ## Plugs
 
 Prometheus Plugs currently comes with two Plugs. One is for collecting http metrics while another provides endpoint for scraping by Prometheus daemon.
