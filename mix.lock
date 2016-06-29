@@ -3,5 +3,5 @@
   "earmark": {:hex, :earmark, "0.2.1", "ba6d26ceb16106d069b289df66751734802777a3cbb6787026dd800ffeb850f3", [:mix], []},
   "ex_doc": {:hex, :ex_doc, "0.11.5", "0dc51cb84f8312162a2313d6c71573a9afa332333d8a332bb12540861b9834db", [:mix], [{:earmark, "~> 0.1.17 or ~> 0.2", [hex: :earmark, optional: true]}]},
   "plug": {:hex, :plug, "1.1.4", "2eee0e85ad420db96e075b3191d3764d6fff61422b101dc5b02e9cce99cacfc7", [:mix], [{:cowboy, "~> 1.0", [hex: :cowboy, optional: true]}]},
-  "prometheus": {:hex, :prometheus, "0.1.0", "fe38d98fc9f96b4d5af6ff0a6ecaa7534f8d6bd6f7ed7060d435d48c67d95b8a", [:rebar], []},
+  "prometheus": {:hex, :prometheus, "1.0.0", "8731e3e403a3e179f8b9addbbb0b4f4336aca6b895815ffe200e62c659a4334b", [:rebar], []},
   "ranch": {:hex, :ranch, "1.2.1", "a6fb992c10f2187b46ffd17ce398ddf8a54f691b81768f9ef5f461ea7e28c762", [:make], []}}
