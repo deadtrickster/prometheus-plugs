@@ -6,9 +6,9 @@ defmodule Plug.PrometheusExporter do
   ```
 
   Options:
-  - path - url to scrape. Default is `"/metrics".
-  - format - export format (`:prometheus_text_format` or `:prometheus_protobuf_format`). Default is `:prometheus_text_format`.
-  - registry - prometheus registry to export. Default is `:default`.
+   - path - url to scrape. Default is `"/metrics"`.
+   - format - export format (`:prometheus_text_format` or `:prometheus_protobuf_format`). Default is `:prometheus_text_format`.
+   - registry - prometheus registry to export. Default is `:default`.
   """
 
   import Plug.Conn
