@@ -15,7 +15,8 @@ Currently maintains two metrics.
 
 All metrics support configurable labels:
 ```elixir
-plug Plug.PrometheusCollector, [labels: [:method, :host]]
+Plug.PrometheusCollector.setup([:method, :host])
+plug Plug.PrometheusCollector, [:method, :host]
 ```
 Supported labels include:
  - code - http code
@@ -23,13 +24,15 @@ Supported labels include:
  - host - requested host
  - port - requested port
  - scheme - request scheme (like http or https)
- 
+
 In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label. Just throw PR if something is needed.
 
 Additionaly `http_request_duration_microseconds` supports configurable bucket bounds:
 ```elixir
-plug Plug.PrometheusCollector, [labels: [:method, :host],
-                                request_duration_bounds: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]]
+Plug.PrometheusCollector.setup([labels: [:method, :host],
+                                 request_duration_bounds: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
+
+plug Plug.PrometheusCollector, [:method, :host]
 ```
 
 Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
@@ -48,7 +51,7 @@ The package can be installed as:
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:prometheus_plugs, "~> 0.0.2"}]
+          [{:prometheus_plugs, "~> 0.3.0"}]
         end
 
   2. Ensure prometheus is started before your application:

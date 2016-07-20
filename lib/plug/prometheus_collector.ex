@@ -2,7 +2,8 @@ defmodule Plug.PrometheusCollector do
   @moduledoc """
   Plug for collecting http metrics.
 
-  To use it, just plug it into the desired module.
+  To use it, plug it into the desired module.
+  You also want to call `setup/1` before using plug pipeline, for example on application start
 
   plug Plug.PrometheusCollector
 
@@ -12,7 +13,9 @@ defmodule Plug.PrometheusCollector do
 
   All metrics support configurable labels:
   ```elixir
-  plug Plug.PrometheusCollector, [labels: [:method, :host]]
+  Plug.PrometheusCollector.setup([:method, :host])
+  plug Plug.PrometheusCollector, [:method, :host]
+
   ```
   Supported labels include:
    - code - http code
@@ -25,8 +28,10 @@ defmodule Plug.PrometheusCollector do
 
   Additionaly `http_request_duration_microseconds` supports configurable bucket bounds:
   ```elixir
-  plug Plug.PrometheusCollector, [labels: [:method, :host],
-                                 request_duration_bounds: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]]
+  Plug.PrometheusCollector.setup([labels: [:method, :host],
+                                 request_duration_bounds: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
+
+  plug Plug.PrometheusCollector, [:method, :host]
   ```
 
   Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
@@ -35,7 +40,7 @@ defmodule Plug.PrometheusCollector do
   alias Plug.Conn
   @behaviour Plug
 
-  def init(opts) do
+  def setup(opts) do
     request_duration_bounds = Keyword.get(opts, :request_duration_bounds, [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000])
     labels = Keyword.get(opts, :labels, [:code, :method])
     :prometheus_counter.declare([name: :http_requests_total,
@@ -45,11 +50,13 @@ defmodule Plug.PrometheusCollector do
                                    help: "The HTTP request latencies in microseconds.",
                                    labels: labels,
                                    bounds: request_duration_bounds])
-    {labels}
   end
 
-  def call(conn, {labels}) do
+  def init(labels) do
+    labels
+  end
 
+  def call(conn, labels) do
     start = current_time()
 
     Conn.register_before_send(conn, fn conn ->
