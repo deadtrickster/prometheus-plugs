@@ -36,16 +36,15 @@ defmodule Plug.PrometheusCollector do
   @behaviour Plug
 
   def init(opts) do
-    :prometheus.start    
     request_duration_bounds = Keyword.get(opts, :request_duration_bounds, [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000])
     labels = Keyword.get(opts, :labels, [:code, :method])
-    :prometheus_counter.new([name: :http_requests_total,
-                             help: "Total number of HTTP requests made.",
-                             labels: labels])
-    :prometheus_histogram.new([name: :http_request_duration_microseconds,
-                               help: "The HTTP request latencies in microseconds.",
-                               labels: labels,
-                               bounds: request_duration_bounds])
+    :prometheus_counter.declare([name: :http_requests_total,
+                                 help: "Total number of HTTP requests made.",
+                                 labels: labels])
+    :prometheus_histogram.declare([name: :http_request_duration_microseconds,
+                                   help: "The HTTP request latencies in microseconds.",
+                                   labels: labels,
+                                   bounds: request_duration_bounds])
     {labels}
   end
 
