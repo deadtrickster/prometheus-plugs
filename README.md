@@ -15,7 +15,7 @@ Currently maintains two metrics.
 
 All metrics support configurable labels:
 ```elixir
-Plug.PrometheusCollector.setup([:method, :host])
+Plug.PrometheusCollector.setup(labels: [:method, :host])
 plug Plug.PrometheusCollector, [:method, :host]
 ```
 Supported labels include:
