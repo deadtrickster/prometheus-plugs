@@ -30,7 +30,8 @@ defmodule PrometheusPlugs.Mixfile do
   defp package do
     [maintainers: ["Ilya Khaprov"],
      licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/deadtrickster/prometheus-plugs"}]
+     links: %{"GitHub" => "https://github.com/deadtrickster/prometheus-plugs",
+              "Example App" => "https://github.com/deadtrickster/prometheus-plugs-example"}]
   end
   
   defp deps do    
