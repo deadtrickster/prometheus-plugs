@@ -3,7 +3,7 @@ defmodule Plug.PrometheusCollector do
   Plug for collecting http metrics.
 
   To use it, plug it into the desired module.
-  You also want to call `setup/1` before using plug pipeline, for example on application start
+  You also want to call `setup/0,1` before using plug, for example on application start!
 
   plug Plug.PrometheusCollector
 
@@ -40,7 +40,7 @@ defmodule Plug.PrometheusCollector do
   alias Plug.Conn
   @behaviour Plug
 
-  def setup(opts) do
+  def setup(opts \\ []) do
     request_duration_bounds = Keyword.get(opts, :request_duration_bounds, [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000])
     labels = Keyword.get(opts, :labels, [:code, :method])
     :prometheus_counter.declare([name: :http_requests_total,

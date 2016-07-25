@@ -36,7 +36,7 @@ defmodule PrometheusPlugs.Mixfile do
   defp deps do    
     [{:cowboy, "~> 1.0.0"},
      {:plug, "~> 1.0"},
-     {:prometheus, "~> 1.0"},
+     {:prometheus, "~> 1.6"},
      {:ex_doc, "~> 0.11", only: :dev},
      {:earmark, ">= 0.0.0", only: :dev}]
   end
