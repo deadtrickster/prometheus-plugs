@@ -8,8 +8,8 @@ defmodule Plug.PrometheusCollector do
   plug Plug.PrometheusCollector
 
   Currently maintains two metrics.
-  - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
-  - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
+   - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
+   - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
 
   All metrics support configurable labels:
   ```elixir
@@ -50,6 +50,7 @@ defmodule Plug.PrometheusCollector do
                                    help: "The HTTP request latencies in microseconds.",
                                    labels: labels,
                                    buckets: request_duration_bounds])
+    maybe_register_process_collector()
   end
 
   def init(labels) do
@@ -69,6 +70,15 @@ defmodule Plug.PrometheusCollector do
       :prometheus_histogram.observe(:http_request_duration_microseconds, labels, diff)
       conn
     end)
+  end
+
+  if Code.ensure_loaded?(:prometheus_process_collector) do
+    defp maybe_register_process_collector do
+      :prometheus_process_collector.register()
+    end
+  else
+    defp maybe_register_process_collector do
+    end
   end
 
   # TODO: remove this once Plug supports only Elixir 1.2.
