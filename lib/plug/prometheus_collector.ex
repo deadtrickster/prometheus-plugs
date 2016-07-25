@@ -49,7 +49,7 @@ defmodule Plug.PrometheusCollector do
     :prometheus_histogram.declare([name: :http_request_duration_microseconds,
                                    help: "The HTTP request latencies in microseconds.",
                                    labels: labels,
-                                   bounds: request_duration_bounds])
+                                   buckets: request_duration_bounds])
   end
 
   def init(labels) do
