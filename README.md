@@ -15,7 +15,10 @@ Currently maintains two metrics.
 
 All metrics support configurable labels:
 ```elixir
+# on app startup (e.g. supervisor setup)
 Plug.PrometheusCollector.setup(labels: [:method, :host])
+
+# in your plugs pipeline
 plug Plug.PrometheusCollector, [:method, :host]
 ```
 Supported labels include:
@@ -41,6 +44,10 @@ Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
 
 Exports metrics in text format via configurable endpoint:
 ``` elixir
+# on app startup (e.g. supervisor setup)
+Plug.PrometheusExporter.setup()
+
+# in your plugs pipeline
 plug Plug.PrometheusExporter, [path: "/prom/metrics"]  # default is /metrics
 ```
 
@@ -51,7 +58,7 @@ The package can be installed as:
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:prometheus_plugs, "~> 0.3.0"}]
+          [{:prometheus_plugs, "~> 0.5.1"}]
         end
 
   2. Ensure prometheus is started before your application:

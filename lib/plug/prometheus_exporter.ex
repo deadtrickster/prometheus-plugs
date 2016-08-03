@@ -2,6 +2,10 @@ defmodule Plug.PrometheusExporter do
   @moduledoc """
   Exports metrics in text format via configurable endpoint:
   ``` elixir
+  # on app startup (e.g. supervisor setup)
+  Plug.PrometheusExporter.setup()
+  
+  # in your plugs pipeline
   plug Plug.PrometheusExporter, [path: "/prom/metrics"]  # default is /metrics
   ```
 

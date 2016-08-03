@@ -13,7 +13,10 @@ defmodule Plug.PrometheusCollector do
 
   All metrics support configurable labels:
   ```elixir
+  # on app startup (e.g. supervisor setup)
   Plug.PrometheusCollector.setup([:method, :host])
+  
+  # in your plugs pipeline
   plug Plug.PrometheusCollector, [:method, :host]
 
   ```
