@@ -28,7 +28,32 @@ Supported labels include:
  - port - requested port
  - scheme - request scheme (like http or https)
 
-In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label. Just throw PR if something is needed.
+In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label.
+In order to create a custom label simply provide a fun as either a key-value
+pair where the value is a fun which will be given the label and conn as
+parameters:
+``` elixir
+defmodule CustomLabels do
+  def private_key(key, conn) do
+    Map.get(conn.private, key, "unknown") |> to_string
+  end
+
+  def phoenix_controller_action(%Plug.Conn{private: private}) do
+    case [private[:phoenix_controller], private[:phoenix_action]] do
+      [nil, nil] -> "unknown"
+      [controller, action] -> "#{controller}/#{action}"
+    end
+  end
+end
+
+# As a key/value for the Collector
+Plug.PrometheusCollector.setup(labels: [:method, :phoenix_controller]
+plug Plug.PrometheusCollector, [:code, phoenix_controller: &CustomLabels.private_key/2]
+
+# As a simple fun
+Plug.PrometheusCollector.setup(labels: [:method, :phoenix_controller_action]
+plug Plug.PrometheusCollector, [:code, &CustomLabels.phoenix_controller_action/1]
+```
 
 Additionaly `http_request_duration_microseconds` supports configurable bucket bounds:
 ```elixir
