@@ -34,7 +34,7 @@ pair where the value is a fun which will be given the label and conn as
 parameters:
 ``` elixir
 defmodule CustomLabels do
-  def private_key(key, conn) do
+  def connection_private_key(key, conn) do
     Map.get(conn.private, key, "unknown") |> to_string
   end
 
@@ -48,7 +48,7 @@ end
 
 # As a key/value for the Collector
 Plug.PrometheusCollector.setup(labels: [:method, :phoenix_controller]
-plug Plug.PrometheusCollector, [:code, phoenix_controller: &CustomLabels.private_key/2]
+plug Plug.PrometheusCollector, [:code, phoenix_controller: &CustomLabels.connection_private_key/2]
 
 # As a simple fun
 Plug.PrometheusCollector.setup(labels: [:method, :phoenix_controller_action]
