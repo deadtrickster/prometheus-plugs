@@ -66,11 +66,12 @@ defmodule Plug.PrometheusCollector do
   """
 
   alias Plug.Conn
+  require Logger
   @behaviour Plug
 
   def setup(opts \\ []) do
     request_duration_bounds = Keyword.get(opts, :request_duration_bounds, [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000])
-    labels = Keyword.get(opts, :labels, [:code, :method])
+    labels = Keyword.get(opts, :labels)
     :prometheus_counter.declare([name: :http_requests_total,
                                  help: "Total number of HTTP requests made.",
                                  labels: labels])
@@ -82,6 +83,9 @@ defmodule Plug.PrometheusCollector do
   end
 
   def init(labels) do
+    if Enum.member?(labels, :code) do
+      Logger.warn("PrometheusCollector: `code` label is deprecated. Probably can be replaced with `status_class`. Or if you still need numbers use `status_code`.")
+    end
     labels
   end
 
@@ -123,6 +127,8 @@ defmodule Plug.PrometheusCollector do
   end
 
   defp label_value(:code, conn), do: conn.status
+  defp label_value(:status_code, conn), do: conn.status
+  defp label_value(:status_class, conn), do: :prometheus_http.status_class(conn.status)
   defp label_value(:method, conn), do: conn.method
   defp label_value(:host, conn), do: conn.host
   defp label_value(:scheme, conn), do: conn.scheme
