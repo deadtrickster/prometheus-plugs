@@ -71,7 +71,7 @@ defmodule Plug.PrometheusCollector do
 
   def setup(opts \\ []) do
     request_duration_bounds = Keyword.get(opts, :request_duration_bounds, [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000])
-    labels = Keyword.get(opts, :labels)
+    labels = Keyword.fetch!(opts, :labels)
     :prometheus_counter.declare([name: :http_requests_total,
                                  help: "Total number of HTTP requests made.",
                                  labels: labels])
