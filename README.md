@@ -22,7 +22,8 @@ Plug.PrometheusCollector.setup(labels: [:method, :host])
 plug Plug.PrometheusCollector, [:method, :host]
 ```
 Supported labels include:
- - code - http code
+ - status_code - http code
+ - status_class - http code class, like "success", "redirect", "client-error", etc
  - method - http method
  - host - requested host
  - port - requested port

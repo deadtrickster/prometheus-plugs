@@ -23,7 +23,7 @@ defmodule PrometheusPlugs.Mixfile do
 
   defp description do
     """
-    Prometheus monitoring system client Plugs. Http metrics collector and exporter
+    Prometheus monitoring system client Plugs. Http metrics collector and exporter.
     """
   end
 
