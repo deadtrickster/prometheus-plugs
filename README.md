@@ -59,7 +59,7 @@ plug Plug.PrometheusCollector, [:code, &CustomLabels.phoenix_controller_action/1
 Additionaly `http_request_duration_microseconds` supports configurable bucket bounds:
 ```elixir
 Plug.PrometheusCollector.setup([labels: [:method, :host],
-                                 request_duration_bounds: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
+                                 request_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
 
 plug Plug.PrometheusCollector, [:method, :host]
 ```

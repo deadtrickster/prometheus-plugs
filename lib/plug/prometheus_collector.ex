@@ -58,7 +58,7 @@ defmodule Plug.PrometheusCollector do
   Additionaly `http_request_duration_microseconds` supports configurable bucket bounds:
   ```elixir
   Plug.PrometheusCollector.setup([labels: [:method, :host],
-                                 request_duration_bounds: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
+                                 request_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
 
   plug Plug.PrometheusCollector, [:method, :host]
   ```
@@ -71,7 +71,7 @@ defmodule Plug.PrometheusCollector do
   @behaviour Plug
 
   def setup(opts \\ []) do
-    request_duration_bounds = Keyword.get(opts, :request_duration_bounds, :prometheus_http.microseconds_duration_buckets())
+    request_duration_buckets = Keyword.get(opts, :request_duration_buckets, :prometheus_http.microseconds_duration_buckets())
     labels = Keyword.fetch!(opts, :labels)
     :prometheus_counter.declare([name: :http_requests_total,
                                  help: "Total number of HTTP requests made.",
@@ -79,7 +79,7 @@ defmodule Plug.PrometheusCollector do
     :prometheus_histogram.declare([name: :http_request_duration_microseconds,
                                    help: "The HTTP request latencies in microseconds.",
                                    labels: labels,
-                                   buckets: request_duration_bounds])
+                                   buckets: request_duration_buckets])
   end
 
   def init(labels) do
