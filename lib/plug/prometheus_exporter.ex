@@ -4,7 +4,7 @@ defmodule Plug.PrometheusExporter do
   ``` elixir
   # on app startup (e.g. supervisor setup)
   Plug.PrometheusExporter.setup()
-  
+
   # in your plugs pipeline
   plug Plug.PrometheusExporter, [path: "/prom/metrics"]  # default is /metrics
   ```
@@ -43,17 +43,9 @@ defmodule Plug.PrometheusExporter do
   end
 
   def call(conn, {path, format, registry}) do
-
-    scrape = :prometheus_summary.observe_duration(:telemetry_scrape_duration_seconds,
-                                                  [format.content_type],
-                                                  fn () -> format.format(registry) end)
-
-    :prometheus_summary.observe(:telemetry_scrape_size_bytes,
-                                [format.content_type],
-                                :erlang.iolist_size(scrape))
-
     case conn.path_info do
       ^path ->
+        scrape = scrape_data(format, registry)
         conn
         |> put_resp_content_type(format.content_type)
         |> send_resp(200, scrape)
@@ -61,5 +53,17 @@ defmodule Plug.PrometheusExporter do
       _ ->
         conn
     end
+  end
+
+  defp scrape_data(format, registry) do
+    scrape = :prometheus_summary.observe_duration(:telemetry_scrape_duration_seconds,
+      [format.content_type],
+      fn () -> format.format(registry) end)
+
+    :prometheus_summary.observe(:telemetry_scrape_size_bytes,
+      [format.content_type],
+      :erlang.iolist_size(scrape))
+
+    scrape
   end
 end
