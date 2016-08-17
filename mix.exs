@@ -1,7 +1,7 @@
 defmodule PrometheusPlugs.Mixfile do
   use Mix.Project
 
-  @version "0.7.0"
+  @version "0.8.0"
 
   def project do
     [app: :prometheus_plugs,
@@ -37,7 +37,7 @@ defmodule PrometheusPlugs.Mixfile do
   defp deps do
     [{:cowboy, "~> 1.0.0"},
      {:plug, "~> 1.0"},
-     {:prometheus, "~> 1.7"},
+     {:prometheus, "~> 2.0"},
      {:ex_doc, "~> 0.11", only: :dev},
      {:earmark, ">= 0.0.0", only: :dev},
      {:prometheus_process_collector, "~> 0.1", optional: true}]
