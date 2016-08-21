@@ -8,20 +8,26 @@ Elixir plugs for [prometheus.erl](https://github.com/deadtrickster/prometheus.er
 
 Prometheus Plugs currently comes with two Plugs. One is for collecting http metrics while another provides endpoint for scraping by Prometheus daemon.
 
-#### Plug.PrometheusCollector
+#### Prometheus.PlugsInstrumenter
+
 Currently maintains two metrics.
  - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
  - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
+ 
+Setup
 
-All metrics support configurable labels:
 ```elixir
 # on app startup (e.g. supervisor setup)
-Plug.PrometheusCollector.setup(labels: [:method, :host])
+Prometheus.PlugsInstrumenter.setup()
 
 # in your plugs pipeline
-plug Plug.PrometheusCollector, [:method, :host]
+plug Prometheus.PlugsInstrumenter
 ```
-Supported labels include:
+
+Plugs instrumenter can be configured via PlugsInstrumenter key of prometheus app env.
+
+All metrics support configurable labels:
+
  - status_code - http code
  - status_class - http code class, like "success", "redirect", "client-error", etc
  - method - http method
@@ -29,13 +35,25 @@ Supported labels include:
  - port - requested port
  - scheme - request scheme (like http or https)
 
+Default configuration:
+
+```elixir
+config :prometheus, PlugsInstrumenter,
+  labels: [:status_class, :method, :host, :scheme],
+  duration_buckets:[10, 100, 1_000, 10_000, 100_000,
+                    300_000, 500_000, 750_000, 1_000_000,
+                    1_500_000, 2_000_000, 3_000_000],
+  registry: :default
+```
+
 In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label.
 In order to create a custom label simply provide a fun as either a key-value
 pair where the value is a fun which will be given the label and conn as
 parameters:
+
 ``` elixir
 defmodule CustomLabels do
-  def connection_private_key(key, conn) do
+  def label_value(key, conn) do
     Map.get(conn.private, key, "unknown") |> to_string
   end
 
@@ -47,21 +65,7 @@ defmodule CustomLabels do
   end
 end
 
-# As a key/value for the Collector
-Plug.PrometheusCollector.setup(labels: [:method, :phoenix_controller]
-plug Plug.PrometheusCollector, [:code, phoenix_controller: &CustomLabels.connection_private_key/2]
-
-# As a simple fun
-Plug.PrometheusCollector.setup(labels: [:method, :phoenix_controller_action]
-plug Plug.PrometheusCollector, [:code, &CustomLabels.phoenix_controller_action/1]
-```
-
-Additionaly `http_request_duration_microseconds` supports configurable bucket bounds:
-```elixir
-Plug.PrometheusCollector.setup([labels: [:method, :host],
-                                 request_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]])
-
-plug Plug.PrometheusCollector, [:method, :host]
+labels: [:status_class, phoenix_controller: CustomLabels, phoenix_controller_action: {CustomLabels, :phoenix_controller_action}]
 ```
 
 Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
@@ -69,12 +73,22 @@ Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
 #### Plug.PrometheusExporter
 
 Exports metrics in text format via configurable endpoint:
-``` elixir
+
+```elixir
 # on app startup (e.g. supervisor setup)
 Plug.PrometheusExporter.setup()
 
 # in your plugs pipeline
-plug Plug.PrometheusExporter, [path: "/prom/metrics"]  # default is /metrics
+plug Plug.PrometheusExporter
+```
+
+Defautl Configuration:
+
+```elixir
+config :prometheus, PlugsExporter,
+  path: "/metrics",
+  format: :text,
+  registry: :default
 ```
 
 ## Installation
