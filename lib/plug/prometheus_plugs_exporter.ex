@@ -32,7 +32,10 @@ defmodule Prometheus.PlugsExporter do
 
   import Plug.Conn
   require Logger
-  alias Prometheus.PlugsExporter.Config
+
+  use Prometheus.Config, [path: "/metrics",
+                          format: :text,
+                          registry: :default]
   @behaviour Plug
 
   ## TODO: support multiple endpoints [for example separate endpoint for each registry]

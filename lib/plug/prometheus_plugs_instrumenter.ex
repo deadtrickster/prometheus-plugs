@@ -10,13 +10,14 @@ defmodule Prometheus.PlugsInstrumenter do
   Currently maintains two metrics.
    - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
    - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
-   
+
   ```elixir
   # on app startup (e.g. supervisor setup)
   Prometheus.PlugsInstrumenter.setup()
 
   # in your plugs pipeline
   plug Prometheus.PlugsInstrumenter
+  ```
 
   ### Configuration
 
@@ -25,18 +26,18 @@ defmodule Prometheus.PlugsInstrumenter do
   All metrics support configurable labels:
 
   ```
-  Supported labels include:
    - status_code - http code
    - status_class - http code class, like "success", "redirect", "client-error", etc
    - method - http method
    - host - requested host
    - port - requested port
    - scheme - request scheme (like http or https)
+   ```
 
   Default configuration:
-  
+
   ```elixir
-  
+
   config :prometheus, PlugsInstrumenter,
     labels: [:status_class, :method, :host, :scheme],
     duration_buckets:[10, 100, 1_000, 10_000, 100_000,
@@ -71,7 +72,9 @@ defmodule Prometheus.PlugsInstrumenter do
 
   alias Plug.Conn
   require Logger
-  alias Prometheus.PlugsInstrumenter.Config
+  use Prometheus.Config, [labels: [:status_class, :method, :host, :scheme],
+                          duration_buckets: :prometheus_http.microseconds_duration_buckets(),
+                          registry: :default]
   @behaviour Plug
 
   def setup(opts \\ []) do
@@ -79,7 +82,7 @@ defmodule Prometheus.PlugsInstrumenter do
       Logger.warn("Prometheus.PlugsInstrumenter: passing options to setup is deprecated. Please use application config.")
     end
     request_duration_buckets = Keyword.get(opts, :request_duration_buckets, Config.duration_buckets)
-    labels = normalize_labels(Keyword.get(opts, :labels, Config.labels))    
+    labels = normalize_labels(Keyword.get(opts, :labels, Config.labels))
     registry = Keyword.get(opts, :registry, Config.registry)
     :prometheus_counter.declare([name: :http_requests_total,
                                  help: "Total number of HTTP requests made.",
@@ -97,7 +100,7 @@ defmodule Prometheus.PlugsInstrumenter do
     else
       Config.labels
     end
-    
+
     if Enum.member?(labels, :code) do
       Logger.warn("Prometheus.PlugsInstrumenter: `code` label is deprecated. Probably can be replaced with `status_class`. Or if you still need numbers use `status_code`.")
     end

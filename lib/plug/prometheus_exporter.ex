@@ -4,7 +4,6 @@ defmodule Plug.PrometheusExporter do
   """
 
   require Logger
-  import Plug.Conn
   @behaviour Plug
 
   def setup(_opts \\ []) do

@@ -1,7 +1,7 @@
 defmodule PrometheusPlugs.Mixfile do
   use Mix.Project
 
-  @version "0.8.1"
+  @version "0.9.0"
 
   def project do
     [app: :prometheus_plugs,
@@ -31,16 +31,19 @@ defmodule PrometheusPlugs.Mixfile do
     [maintainers: ["Ilya Khaprov"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/deadtrickster/prometheus-plugs",
-              "Ecto integration" => "https://github.com/deadtrickster/prometheus-ecto",
-              "Example App" => "https://github.com/deadtrickster/prometheus-plugs-example"}]
+              "Prometheus.erl" => "https://hex.pm/packages/prometheus",
+              "Prometheus.ex" => "https://hex.pm/packages/prometheus_ex",
+              "Ecto Instrumenter" => "https://hex.pm/packages/prometheus_ecto",
+              "Phoenix Instrumenter" => "https://hex.pm/packages/prometheus_phoenix",
+              "Process info Collector" => "https://hex.pm/packages/prometheus_process_collector"}]
   end
 
   defp deps do
     [{:cowboy, "~> 1.0.0"},
      {:plug, "~> 1.0"},
-     {:prometheus, "~> 2.0"},
      {:ex_doc, "~> 0.11", only: :dev},
      {:earmark, ">= 0.0.0", only: :dev},
+     {:prometheus_ex, "~> 0.0.1"},
      {:prometheus_process_collector, "~> 0.2", optional: true}]
-end
+  end
 end
