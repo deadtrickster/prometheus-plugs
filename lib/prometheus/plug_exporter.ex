@@ -1,8 +1,9 @@
 defmodule Prometheus.PlugExporter do
   @moduledoc """
-  Exports metrics in text format via configurable endpoint:
+  Exports Prometheus metrics via configurable endpoint:
+
   ``` elixir
-  # plug_exporter.ex
+  # define plug
   defmodule MetricsPlugExporter do
     use Prometheus.PlugExporter
   end
@@ -14,6 +15,8 @@ defmodule Prometheus.PlugExporter do
   plug MetricsPlugExporter
   ```
 
+  ### Metrics
+  
   Also maintains telemetry metrics:
    - telemetry_scrape_duration_seconds
    - telemetry_scrape_size_bytes
@@ -28,11 +31,13 @@ defmodule Prometheus.PlugExporter do
 
   ```elixir
 
-  config :prometheus, MetricsPlugExporter,
+  config :prometheus, MetricsPlugExporter, # (you should replace this with the name of your plug)
     path: "/metrics",
     format: :text,
     registry: :default
   ```
+  
+  Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
   """
 
   require Logger

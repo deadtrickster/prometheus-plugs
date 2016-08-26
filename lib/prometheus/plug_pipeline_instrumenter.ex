@@ -1,42 +1,48 @@
 defmodule Prometheus.PlugPipelineInstrumenter do
   @moduledoc """
-  Plug for collecting http metrics.
+  Plug for collecting http metrics. Instruments whole pipeline.
 
-  To use it, plug it into the desired module.
-  You also want to call `setup/0` before using plug, for example on application start!
+  First lets define plug for your instrumenter:
+  
+  ```elixir 
+  defmodule PlugPipelineInstrumenter do
+    use Prometheus.PlugPipelineInstrumenter
+  end
+  ```
+  
+  Then add call `setup/0` before using plug, for example on application start!
 
-  plug Prometheus.PlugsInstrumenter
+  ```elixir  
+  # on app startup (e.g. supervisor setup)
+  PlugPipelineInstrumenter.setup()
+  ```
+
+  And finally add plug to pipeline:
+  ```elixir
+  # in your plug pipeline
+  plug PlugPipelineInstrumenter
+  ```
+
+  ### Metrics
 
   Currently maintains two metrics.
    - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
    - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
 
-  ```elixir
-  # my_plug_pipeline_instrumenter.ex
-  defmodule PlugPipelineInstrumenter do
-    use Prometheus.PlugsInstrumenter
-  end
-
-  # on app startup (e.g. supervisor setup)
-  PlugPipelineInstrumenter.setup()
-
-  # in your plugs pipeline
-  plug PlugPipelineInstrumenter
-  ```
-
   ### Configuration
 
-  Plugs instrumenter can be configured via PlugsInstrumenter key of prometheus app env.
+  Plug pipeline instrumenter can be configured via `PlugPipelineInstrumenter` (you should replace this with the name
+  of your plug) key of prometheus app env.
 
   All metrics support configurable labels:
 
   ```
-   - status_code - http code
-   - status_class - http code class, like "success", "redirect", "client-error", etc
-   - method - http method
-   - host - requested host
-   - port - requested port
-   - scheme - request scheme (like http or https)
+   - status_code - http code;
+   - status_class - http code class, like "success", "redirect", "client-error", etc;
+   - method - http method;
+   - host - requested host;
+   - port - requested port;
+   - scheme - request scheme (like http or https).
   ```
 
   Default configuration:
@@ -51,13 +57,13 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   ```
 
   In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label.
-  In order to create a custom label simply provide a fun as either a key-value
-  pair where the value is either module name with `label_value/2` function exported
-  or `{module, fun/2}` tuple. By default target module's `label_value` is called when label is unknown.
+  Label value can be generated using custom function. In order to create a custom label simply provide a fun reference
+  as a key-value pair where key is a label name and value is either module name which exports `label_value/2` function
+  or `{module, fun/2}` tuple. By default your plug's `label_value` is called when label is unknown.
 
   ``` elixir
   defmodule PlugPipelineInstrumenter do
-    use Prometheus.PlugsInstrumenter
+    use Prometheus.PlugPipelineInstrumenter
 
     def label_value(:request_path, conn) do
       conn.request_path
@@ -70,6 +76,8 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
   """
 
+  ## TODO: instrumenter for single plug(decorator)
+  
   require Logger
   require Prometheus.Contrib.HTTP
 
