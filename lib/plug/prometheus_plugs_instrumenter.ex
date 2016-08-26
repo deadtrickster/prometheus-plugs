@@ -32,12 +32,11 @@ defmodule Prometheus.PlugsInstrumenter do
    - host - requested host
    - port - requested port
    - scheme - request scheme (like http or https)
-   ```
+  ```
 
   Default configuration:
 
   ```elixir
-
   config :prometheus, PlugsInstrumenter,
     labels: [:status_class, :method, :host, :scheme],
     duration_buckets:[10, 100, 1_000, 10_000, 100_000,
@@ -71,10 +70,15 @@ defmodule Prometheus.PlugsInstrumenter do
   """
 
   alias Plug.Conn
+
   require Logger
+  require Prometheus.Contrib.HTTP
+
+  use Prometheus.Metric
   use Prometheus.Config, [labels: [:status_class, :method, :host, :scheme],
-                          duration_buckets: :prometheus_http.microseconds_duration_buckets(),
+                          duration_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
                           registry: :default]
+
   @behaviour Plug
 
   def setup(opts \\ []) do
@@ -84,13 +88,16 @@ defmodule Prometheus.PlugsInstrumenter do
     request_duration_buckets = Keyword.get(opts, :request_duration_buckets, Config.duration_buckets)
     labels = normalize_labels(Keyword.get(opts, :labels, Config.labels))
     registry = Keyword.get(opts, :registry, Config.registry)
-    :prometheus_counter.declare([name: :http_requests_total,
-                                 help: "Total number of HTTP requests made.",
-                                 labels: labels], registry)
-    :prometheus_histogram.declare([name: :http_request_duration_microseconds,
-                                   help: "The HTTP request latencies in microseconds.",
-                                   labels: labels,
-                                   buckets: request_duration_buckets], registry)
+
+    Counter.declare([name: :http_requests_total,
+                     help: "Total number of HTTP requests made.",
+                     labels: labels,
+                     registry: registry])
+    Histogram.declare([name: :http_request_duration_microseconds,
+                       help: "The HTTP request latencies in microseconds.",
+                       labels: labels,
+                       buckets: request_duration_buckets,
+                       registry: registry])
   end
 
   def init(labels) do
@@ -112,12 +119,17 @@ defmodule Prometheus.PlugsInstrumenter do
 
     Conn.register_before_send(conn, fn conn ->
       labels = construct_labels(labels, conn)
-      :prometheus_counter.inc(Config.registry, :http_requests_total, labels, 1)
+      Counter.inc([registry: Config.registry,
+                   name: :http_requests_total,
+                   labels: labels])
 
       stop = current_time()
       diff = time_diff(start, stop)
 
-      :prometheus_histogram.observe(Config.registry, :http_request_duration_microseconds, labels, diff)
+      Histogram.observe([regsitry: Config.registry,
+                         name: :http_request_duration_microseconds,
+                         labels: labels], diff)
+
       conn
     end)
   end
@@ -146,7 +158,7 @@ defmodule Prometheus.PlugsInstrumenter do
 
   defp label_value(:code, conn), do: conn.status
   defp label_value(:status_code, conn), do: conn.status
-  defp label_value(:status_class, conn), do: :prometheus_http.status_class(conn.status)
+  defp label_value(:status_class, conn), do: Prometheus.Contrib.HTTP.status_class(conn.status)
   defp label_value(:method, conn), do: conn.method
   defp label_value(:host, conn), do: conn.host
   defp label_value(:scheme, conn), do: conn.scheme

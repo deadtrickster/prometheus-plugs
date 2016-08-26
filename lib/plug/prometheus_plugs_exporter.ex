@@ -16,13 +16,13 @@ defmodule Prometheus.PlugsExporter do
   Do not forget to call `setup/0` before using plug, for example on application start!
 
   ### Configuration
-  
+
   Plugs exporter can be configured via PlugsExporter key of prometheus app env.
 
-  Default configuration:  
-  
+  Default configuration:
+
   ```elixir
-  
+
   config :prometheus, PlugsExporter,
     path: "/metrics",
     format: :text,
@@ -33,6 +33,7 @@ defmodule Prometheus.PlugsExporter do
   import Plug.Conn
   require Logger
 
+  use Prometheus.Metric
   use Prometheus.Config, [path: "/metrics",
                           format: :text,
                           registry: :default]
@@ -40,14 +41,16 @@ defmodule Prometheus.PlugsExporter do
 
   ## TODO: support multiple endpoints [for example separate endpoint for each registry]
   ## via :endpoints config entry [{path, registry, format}]. Must wait till codegeneration implemented.
-  def setup(_opts \\ []) do    
-    :prometheus_summary.declare([name: :telemetry_scrape_duration_seconds,
-                                 help: "Scrape duration",
-                                 labels: ["content_type"]], Config.registry)
+  def setup(_opts \\ []) do
+    Summary.declare([name: :telemetry_scrape_duration_seconds,
+                     help: "Scrape duration",
+                     labels: ["content_type"],
+                     registry: Config.registry])
 
-    :prometheus_summary.declare([name: :telemetry_scrape_size_bytes,
-                                 help: "Scrape size, uncompressed",
-                                 labels: ["content_type"]], Config.registry)
+    Summary.declare([name: :telemetry_scrape_size_bytes,
+                     help: "Scrape size, uncompressed",
+                     labels: ["content_type"],
+                     registry: Config.registry])
   end
 
   def init(opts) do
@@ -78,17 +81,21 @@ defmodule Prometheus.PlugsExporter do
 
   defp normalize_format(:text), do: :prometheus_text_format
   defp normalize_format(:protobuf), do: :prometheus_protobuf_format
+  defp normalize_format(Prometheus.Format.Text), do: :prometheus_text_format
+  defp normalize_format(Prometheus.Format.Protobuf), do: :prometheus_protobuf_format
   defp normalize_format(format), do: format
-  
+
   defp scrape_data(format, registry) do
-    scrape = :prometheus_summary.observe_duration(:telemetry_scrape_duration_seconds,
-      registry,
-      [format.content_type],
+    scrape = Summary.observe_duration(
+      [name: :telemetry_scrape_duration_seconds,
+       registry: registry,
+       labels: [format.content_type]],
       fn () -> format.format(registry) end)
 
-    :prometheus_summary.observe(registry,
-      :telemetry_scrape_size_bytes,
-      [format.content_type],
+    Summary.observe(
+      [registry: registry,
+       name: :telemetry_scrape_size_bytes,
+       labels: [format.content_type]],
       :erlang.iolist_size(scrape))
 
     scrape

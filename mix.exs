@@ -18,7 +18,7 @@ defmodule PrometheusPlugs.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :prometheus]]
+    [applications: [:logger, :prometheus_ex]]
   end
 
   defp description do
@@ -43,7 +43,7 @@ defmodule PrometheusPlugs.Mixfile do
      {:plug, "~> 1.0"},
      {:ex_doc, "~> 0.11", only: :dev},
      {:earmark, ">= 0.0.0", only: :dev},
-     {:prometheus_ex, "~> 0.0.1"},
+     {:prometheus_ex, "~> 0.0.3"},
      {:prometheus_process_collector, "~> 0.2", optional: true}]
   end
 end
