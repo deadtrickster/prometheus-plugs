@@ -6,7 +6,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   
   ```elixir 
   defmodule PlugPipelineInstrumenter do
-    use Prometheus.PlugsInstrumenter
+    use Prometheus.PlugPipelineInstrumenter
   end
   ```
   
@@ -20,7 +20,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   And finally add plug to pipeline:
   ```elixir
   # in your plug pipeline
-  plug Prometheus.PlugsInstrumenter
+  plug PlugPipelineInstrumenter
   ```
 
   ### Metrics
@@ -63,7 +63,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
 
   ``` elixir
   defmodule PlugPipelineInstrumenter do
-    use Prometheus.PlugsInstrumenter
+    use Prometheus.PlugPipelineInstrumenter
 
     def label_value(:request_path, conn) do
       conn.request_path
