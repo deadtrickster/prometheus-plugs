@@ -6,5 +6,5 @@
   "plug": {:hex, :plug, "1.2.0", "496bef96634a49d7803ab2671482f0c5ce9ce0b7b9bc25bc0ae8e09859dd2004", [:mix], [{:cowboy, "~> 1.0", [hex: :cowboy, optional: true]}, {:mime, "~> 1.0", [hex: :mime, optional: false]}]},
   "prometheus": {:hex, :prometheus, "3.0.0-alpha1", "a547a71d32020adf2197d4e457cdb83cf63ecdb73bb2716b13d542f346255ea0", [:rebar3], []},
   "prometheus_ex": {:hex, :prometheus_ex, "1.0.0-alpha1", "0d7de6b553af03fb7ee70b9590eb910d4c02604c800ae59f9bad2083ef4f20f8", [:mix], [{:prometheus, "~> 3.0.0-alpha1", [hex: :prometheus, optional: false]}]},
-  "prometheus_process_collector": {:hex, :prometheus_process_collector, "0.2.0", "abd65db36c1b01dad30a122999ccb3153b0b6dd2a1eafb690972eb9d29aa835e", [:rebar3], [{:prometheus, "~> 2.0", [hex: :prometheus, optional: false]}]},
+  "prometheus_process_collector": {:hex, :prometheus_process_collector, "1.0.0-alpha1", "a550fdadda7eacf1d22a654404e35fcb4d3e7a07ed3b2c27ce85fe1acd47e1a1", [:rebar3], [{:prometheus, "~> 3.0.0-alpha1", [hex: :prometheus, optional: false]}]},
   "ranch": {:hex, :ranch, "1.2.1", "a6fb992c10f2187b46ffd17ce398ddf8a54f691b81768f9ef5f461ea7e28c762", [:make], []}}
