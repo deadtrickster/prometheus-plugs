@@ -21,6 +21,11 @@ defmodule Prometheus.TestPlugExporter do
   use Prometheus.PlugExporter
 end
 
+Application.put_env(:prometheus, Prometheus.TestPlugExporterCustomConfig,
+  format: :protobuf,
+  path: "/metrics_qwe",
+  registry: :qwe)
+
 defmodule Prometheus.TestPlugExporterCustomConfig do
   use Prometheus.PlugExporter
 end
@@ -44,9 +49,9 @@ end
 defmodule Prometheus.TestPlugStack do
   use Plug.Builder
 
-  plug Prometheus.TestPlugPipelineInstrumenter
-  plug Prometheus.TestPlugPipelineInstrumenterCustomConfig
   plug Prometheus.TestPlugExporter
   plug Prometheus.TestPlugExporterCustomConfig
+  plug Prometheus.TestPlugPipelineInstrumenter
+  plug Prometheus.TestPlugPipelineInstrumenterCustomConfig
   plug HelloWorldPlug, []
 end

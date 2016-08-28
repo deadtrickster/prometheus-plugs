@@ -7,8 +7,8 @@ defmodule PrometheusPlugsTest do
   require Prometheus.Registry
 
   setup do
-    # Prometheus.Registry.clear(:default)
-    # Prometheus.Registry.clear(:qwe)
+    Prometheus.Registry.clear(:default)
+    Prometheus.Registry.clear(:qwe)
 
     Prometheus.TestPlugPipelineInstrumenter.setup()
     Prometheus.TestPlugPipelineInstrumenterCustomConfig.setup()
@@ -45,7 +45,7 @@ defmodule PrometheusPlugsTest do
                                              registry: :default,
                                              labels: ['success', "GET", "www.example.com", :http]])
 
-    assert sum > 0    
+    assert sum > 0
     assert 13 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
@@ -56,5 +56,25 @@ defmodule PrometheusPlugsTest do
     assert sum > 0
     assert 3 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
+  end
+
+  test "Plug Exporter tests" do
+    conn = call(conn(:get, "/"))
+    assert conn.resp_body == "Hello World!"
+
+    call(conn(:get, "/metrics"))
+    conn = call(conn(:get, "/metrics"))
+
+    assert {_,_} = :binary.match(conn.resp_body,
+      "http_request_duration_microseconds_bucket{status_class=\"success\",method=\"GET\",host=\"www.example.com\",scheme=\"http\",le=\"+Inf\"} 1")
+    assert {_,_} = :binary.match(conn.resp_body,
+      "telemetry_scrape_size_bytes_count{registry=\"default\",content_type=\"text/plain; version=0.0.4\"} 1")
+    assert {_,_} = :binary.match(conn.resp_body,
+      "telemetry_scrape_duration_seconds_count{registry=\"default\",content_type=\"text/plain; version=0.0.4\"} 1")
+
+    call(conn(:get, "/metrics"))
+    conn = call(conn(:get, "/metrics"))
+
+    assert conn.resp_body > 0 ## TODO: decode and check protobuf resp body
   end
 end

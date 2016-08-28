@@ -99,8 +99,8 @@ defmodule Prometheus.PlugExporter do
 
       defp scrape_data do
         scrape = Summary.observe_duration(
-          [name: :telemetry_scrape_duration_seconds,
-           registry: unquote(registry),
+          [registry: unquote(registry),
+           name: :telemetry_scrape_duration_seconds,
            labels: unquote(labels)],
           fn () ->
             unquote(format).format(unquote(registry))
