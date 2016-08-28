@@ -1,6 +1,6 @@
 defmodule Prometheus.PlugPipelineInstrumenter do
   @moduledoc """
-  Plug for collecting http metrics. Instruments whole pipeline.
+  Generates a plug for collecting http metrics. Instruments whole pipeline.
 
   First lets define plug for your instrumenter:
 
