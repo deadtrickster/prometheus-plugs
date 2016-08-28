@@ -3,16 +3,16 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   Plug for collecting http metrics. Instruments whole pipeline.
 
   First lets define plug for your instrumenter:
-  
-  ```elixir 
+
+  ```elixir
   defmodule PlugPipelineInstrumenter do
     use Prometheus.PlugPipelineInstrumenter
   end
   ```
-  
+
   Then add call `setup/0` before using plug, for example on application start!
 
-  ```elixir  
+  ```elixir
   # on app startup (e.g. supervisor setup)
   PlugPipelineInstrumenter.setup()
   ```
@@ -50,9 +50,9 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   ```elixir
   config :prometheus, PlugPipelineInstrumenter,
     labels: [:status_class, :method, :host, :scheme],
-    duration_buckets:[10, 100, 1_000, 10_000, 100_000,
-                      300_000, 500_000, 750_000, 1_000_000,
-                      1_500_000, 2_000_000, 3_000_000],
+    duration_buckets: [10, 100, 1_000, 10_000, 100_000,
+                       300_000, 500_000, 750_000, 1_000_000,
+                       1_500_000, 2_000_000, 3_000_000],
     registry: :default
   ```
 
@@ -77,8 +77,9 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   """
 
   ## TODO: instrumenter for single plug(decorator)
-  
+
   require Logger
+
   require Prometheus.Contrib.HTTP
 
   use Prometheus.Metric
@@ -86,14 +87,14 @@ defmodule Prometheus.PlugPipelineInstrumenter do
                           duration_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
                           registry: :default]
 
-  defmacro __using__(_opts) do    
+  defmacro __using__(_opts) do
     module_name = __CALLER__.module
-    
+
     request_duration_buckets = Config.duration_buckets(module_name)
     labels = Config.labels(module_name)
     nlabels = normalize_labels(labels)
     registry = Config.registry(module_name)
-    
+
     quote do
 
       @behaviour Plug
@@ -130,7 +131,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
           stop = current_time()
           diff = time_diff(start, stop)
 
-          Histogram.observe([regsitry: unquote(registry),
+          Histogram.observe([registry: unquote(registry),
                              name: :http_request_duration_microseconds,
                              labels: labels], diff)
 
