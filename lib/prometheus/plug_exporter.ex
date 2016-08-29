@@ -89,7 +89,7 @@ defmodule Prometheus.PlugExporter do
           unquote(path) ->
             scrape = scrape_data()
             conn
-            |> put_resp_content_type(unquote(content_type))
+            |> put_resp_content_type(unquote(content_type), nil)
             |> send_resp(200, scrape)
             |> halt
           _ ->

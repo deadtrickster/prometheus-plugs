@@ -5,6 +5,8 @@ defmodule PrometheusPlugsTest do
   ## doctest Plug.PrometheusExporter
 
   require Prometheus.Registry
+  require Prometheus.Format.Text
+  require Prometheus.Format.Protobuf
 
   setup do
     Prometheus.Registry.clear(:default)
@@ -67,6 +69,8 @@ defmodule PrometheusPlugsTest do
     call(conn(:get, "/metrics"))
     conn = call(conn(:get, "/metrics"))
 
+    assert [Prometheus.Format.Text.content_type] == conn |> get_resp_header("content-type")
+
     assert {_,_} = :binary.match(conn.resp_body,
       "http_request_duration_microseconds_bucket{status_class=\"success\",method=\"GET\",host=\"www.example.com\",scheme=\"http\",le=\"+Inf\"} 1")
     assert {_,_} = :binary.match(conn.resp_body,
@@ -74,9 +78,10 @@ defmodule PrometheusPlugsTest do
     assert {_,_} = :binary.match(conn.resp_body,
       "telemetry_scrape_duration_seconds_count{registry=\"default\",content_type=\"text/plain; version=0.0.4\"} 1")
 
-    call(conn(:get, "/metrics"))
-    conn = call(conn(:get, "/metrics"))
+    call(conn(:get, "/metrics_qwe"))
+    conn = call(conn(:get, "/metrics_qwe"))
 
+    assert [Prometheus.Format.Protobuf.content_type] == conn |> get_resp_header("content-type")
     assert conn.resp_body > 0 ## TODO: decode and check protobuf resp body
   end
 
