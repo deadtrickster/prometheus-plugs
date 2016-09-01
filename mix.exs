@@ -12,7 +12,7 @@ defmodule PrometheusPlugs.Mixfile do
      deps: deps,
      description: description,
      package: package,
-     docs: [main: Prometheus.PlugPipelineInstrumenter,
+     docs: [main: "api-reference",
             source_ref: "v#{@version}",
             source_url: "https://github.com/deadtrickster/prometheus-plugs"]]
   end
