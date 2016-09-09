@@ -57,7 +57,9 @@ defmodule Prometheus.PlugInstrumenter do
    - counter - counter metric name (false);
    - histogram - histogram metric name (false);
    - histogram_buckets - histogram metric buckets (Prometheus.Contrib.HTTP.microseconds_duration_buckets());
-   - labels - labels for counter and histogram ([]).
+   - labels - labels for counter and histogram ([]);
+   - duration_units - duration units for the histogram, if histogram name already has known duration unit
+     this can be omitted (:undefined).
 
   As noted above at least one metric name should be supplied. Of course you must tell what plug
   to instrument through `:plug` key.
@@ -75,7 +77,8 @@ defmodule Prometheus.PlugInstrumenter do
                           histogram: false,
                           histogram_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
                           labels: [],
-                          registry: :default]
+                          registry: :default,
+                          duration_unit: :undefined]
 
   use Prometheus.Metric
 
@@ -90,6 +93,7 @@ defmodule Prometheus.PlugInstrumenter do
     labels = Config.labels(module_name)
     nlabels = normalize_labels(labels)
     registry = Config.registry(module_name)
+    duration_unit = Config.duration_unit(module_name)
 
     if !counter and !histogram do
       raise "No metrics!"
@@ -113,10 +117,11 @@ defmodule Prometheus.PlugInstrumenter do
         unquote(if histogram do
           quote do
             Histogram.declare([name: unquote(histogram),
-                               help: unquote("#{friendly_plug_name} plug calls duration in microseconds."),
+                               help: unquote("#{friendly_plug_name} plug calls duration in #{duration_unit}."),
                                labels: unquote(nlabels),
                                buckets: unquote(histogram_buckets),
-                               registry: unquote(registry)])
+                               registry: unquote(registry),
+                               duration_unit: unquote(duration_unit)])
           end
         end)
 
@@ -126,20 +131,11 @@ defmodule Prometheus.PlugInstrumenter do
         unquote(plug).init(opts)
       end
 
-      # TODO: remove this once Plug supports only Elixir 1.2.
-      if function_exported?(:erlang, :monotonic_time, 0) do
-        defp current_time, do: :erlang.monotonic_time
-        defp time_diff(start, stop), do: (stop - start) |> :erlang.convert_time_unit(:native, :micro_seconds)
-      else
-        defp current_time, do: :os.timestamp()
-        defp time_diff(start, stop), do: :timer.now_diff(stop, start)
-      end
-
       def call(conn, state) do
 
         unquote(if histogram do
           quote do
-            start = current_time()
+            start = :erlang.monotonic_time
           end
         end)
 
@@ -147,7 +143,7 @@ defmodule Prometheus.PlugInstrumenter do
 
         unquote(if histogram do
           quote do
-            diff = (current_time - start) |> :erlang.convert_time_unit(:native, :micro_seconds)
+            diff = (:erlang.monotonic_time - start)
           end
         end)
 

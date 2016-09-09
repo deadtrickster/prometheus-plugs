@@ -57,11 +57,60 @@ defmodule PrometheusPlugsTest do
                                              registry: :qwe,
                                              labels: ["GET", 12]])
 
-    IO.puts(sum)
-
     assert (sum > 1.0 and sum < 1.2)
     assert 3 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
+  end
+
+  test "Plug instrumenter tests" do
+    ## two histograms by Pipeline instrumenters and two by Plug instrumenters
+    assert 4 = length(:ets.tab2list(:prometheus_histogram_table))
+    ## two counters by Pipeline instrumenters and two by Plug instrumenters
+    assert 4 = length(:ets.tab2list(:prometheus_counter_table))
+
+    conn = call(conn(:get, "/"))
+    assert conn.resp_body == "Hello World!"
+
+    assert 1 == Counter.value([name: :vip_only_counter,
+                               labels: [:other]])
+
+    assert 1 == Counter.value([name: :vip_counter,
+                               labels: []])
+
+    assert {buckets, sum} = Histogram.value([name: :vip_only_histogram_microseconds,
+                                             registry: :qwe,
+                                             labels: [:other]])
+    assert sum > 0
+    assert 3 = length(buckets)
+    assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
+
+    assert {buckets, sum} = Histogram.value([name: :vip_histogram])
+    assert sum > 0
+    assert 13 = length(buckets)
+    assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
+
+
+
+    conn = call(conn(:get, "/qwe/qwe"))
+    assert conn.resp_body == "Hello World!"
+
+    assert 1 == Counter.value([name: :vip_only_counter,
+                               labels: [:qwe]])
+
+    assert 2 == Counter.value([name: :vip_counter])
+
+    assert {buckets, sum} = Histogram.value([name: :vip_only_histogram_microseconds,
+                                             registry: :qwe,
+                                             labels: [:qwe]])
+    assert (sum > 1_000_000 and sum < 1_200_000)
+    assert 3 = length(buckets)
+    assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
+
+    assert {buckets, sum} = Histogram.value([name: :vip_histogram])
+    IO.puts(sum)
+    assert (sum > 1.0 and sum < 1.2)
+    assert 13 = length(buckets)
+    assert 2 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
   end
 
   test "Plug Exporter tests" do
@@ -85,55 +134,5 @@ defmodule PrometheusPlugsTest do
 
     assert [Prometheus.Format.Protobuf.content_type] == conn |> get_resp_header("content-type")
     assert conn.resp_body > 0 ## TODO: decode and check protobuf resp body
-  end
-
-  test "Plug instrumenter tests" do
-    ## two histograms by Pipeline instrumenters and two by Plug instrumenters
-    assert 4 = length(:ets.tab2list(:prometheus_histogram_table))
-    ## two counters by Pipeline instrumenters and two by Plug instrumenters
-    assert 4 = length(:ets.tab2list(:prometheus_counter_table))
-
-    conn = call(conn(:get, "/"))
-    assert conn.resp_body == "Hello World!"
-
-    assert 1 == Counter.value([name: :vip_only_counter,
-                               labels: [:other]])
-
-    assert 1 == Counter.value([name: :vip_counter,
-                               labels: []])
-
-    assert {buckets, sum} = Histogram.value([name: :vip_only_histogram,
-                                             registry: :qwe,
-                                             labels: [:other]])
-    assert sum > 0
-    assert 3 = length(buckets)
-    assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
-
-    assert {buckets, sum} = Histogram.value([name: :vip_histogram])
-    assert sum > 0
-    assert 13 = length(buckets)
-    assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
-
-
-
-    conn = call(conn(:get, "/qwe/qwe"))
-    assert conn.resp_body == "Hello World!"
-
-    assert 1 == Counter.value([name: :vip_only_counter,
-                               labels: [:qwe]])
-
-    assert 2 == Counter.value([name: :vip_counter])
-
-    assert {buckets, sum} = Histogram.value([name: :vip_only_histogram,
-                                             registry: :qwe,
-                                             labels: [:qwe]])
-    assert sum > 0
-    assert 3 = length(buckets)
-    assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
-
-    assert {buckets, sum} = Histogram.value([name: :vip_histogram])
-    assert sum > 0
-    assert 13 = length(buckets)
-    assert 2 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
   end
 end

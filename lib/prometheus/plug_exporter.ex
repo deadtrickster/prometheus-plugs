@@ -16,7 +16,7 @@ defmodule Prometheus.PlugExporter do
   ```
 
   ### Metrics
-  
+
   Also maintains telemetry metrics:
    - telemetry_scrape_duration_seconds
    - telemetry_scrape_size_bytes
@@ -36,7 +36,7 @@ defmodule Prometheus.PlugExporter do
     format: :text,
     registry: :default
   ```
-  
+
   Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
   """
 

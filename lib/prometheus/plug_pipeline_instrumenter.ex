@@ -82,7 +82,8 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   labels: [:status_class, :request_path]
   ```
 
-  Bear in mind that bounds are ***<duration_unit>***.
+  Bear in mind that buckets are ***<duration_unit>*** so if you are not using default unit
+  you also have to override buckets.
   """
 
   ## TODO: instrumenter for single plug(decorator)
@@ -150,7 +151,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
         end)
       end
 
-      
+
     end
   end
 

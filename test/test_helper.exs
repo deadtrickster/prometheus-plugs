@@ -41,6 +41,7 @@ defmodule Prometheus.VeryImportantPlug do
   def call(conn, _opts) do
     case conn.path_info do
       ["qwe", "qwe"] ->
+        Process.sleep(1000)
         put_private(conn, :vip_kind, :qwe)
       _ ->
         put_private(conn, :vip_kind, :other)
@@ -64,7 +65,7 @@ end
 
 Application.put_env(:prometheus, Prometheus.VeryImportantPlugHistogram,
   plug: Prometheus.VeryImportantPlugCounter,
-  histogram: :vip_only_histogram,
+  histogram: :vip_only_histogram_microseconds,
   labels: [:vip_kind],
   histogram_buckets: [100, 200],
   registry: :qwe)
@@ -80,7 +81,8 @@ end
 Application.put_env(:prometheus, Prometheus.VeryImportantPlugInstrumenter,
   plug: Prometheus.VeryImportantPlugHistogram,
   counter: :vip_counter,
-  histogram: :vip_histogram)
+  histogram: :vip_histogram,
+  duration_unit: :seconds)
 
 defmodule Prometheus.VeryImportantPlugInstrumenter do
   use Prometheus.PlugInstrumenter
