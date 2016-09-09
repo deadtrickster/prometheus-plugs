@@ -7,7 +7,8 @@ end
 Application.put_env(:prometheus, Prometheus.TestPlugPipelineInstrumenterCustomConfig,
   labels: [:method, :resp_length],
   duration_buckets: [10, 100],
-  registry: :qwe)
+  registry: :qwe,
+  duration_unit: :seconds)
 
 defmodule Prometheus.TestPlugPipelineInstrumenterCustomConfig do
   use Prometheus.PlugPipelineInstrumenter
@@ -95,6 +96,7 @@ defmodule HelloWorldPlug do
   end
 
   def call(conn, _opts) do
+    Process.sleep(1000)
     conn
     |> put_resp_content_type("text/plain")
     |> send_resp(200, "Hello World!")

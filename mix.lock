@@ -4,7 +4,7 @@
   "ex_doc": {:hex, :ex_doc, "0.13.0", "aa2f8fe4c6136a2f7cfc0a7e06805f82530e91df00e2bff4b4362002b43ada65", [:mix], [{:earmark, "~> 1.0", [hex: :earmark, optional: false]}]},
   "mime": {:hex, :mime, "1.0.1", "05c393850524767d13a53627df71beeebb016205eb43bfbd92d14d24ec7a1b51", [:mix], []},
   "plug": {:hex, :plug, "1.2.0", "496bef96634a49d7803ab2671482f0c5ce9ce0b7b9bc25bc0ae8e09859dd2004", [:mix], [{:cowboy, "~> 1.0", [hex: :cowboy, optional: true]}, {:mime, "~> 1.0", [hex: :mime, optional: false]}]},
-  "prometheus": {:hex, :prometheus, "3.0.0-alpha6", "81ca53809e3287effd34eff8ded44fc7b2ec29df4387e536fad9650fe32580f9", [:rebar3], []},
-  "prometheus_ex": {:hex, :prometheus_ex, "1.0.0-alpha6", "cdc36df21f73aff4fc465ba91424911dbe7ab5549bc5e76ef6ea0513c6467a6b", [:mix], [{:prometheus, "~> 3.0.0-alpha6", [hex: :prometheus, optional: false]}]},
-  "prometheus_process_collector": {:hex, :prometheus_process_collector, "1.0.0-alpha6", "69593169d0778f667302ebd42a83c3b6080b689d510ed7e1d8d454f8712c3604", [:rebar3], [{:prometheus, "~> 3.0.0-alpha6", [hex: :prometheus, optional: false]}]},
+  "prometheus": {:hex, :prometheus, "3.0.0-alpha8", "3f7e92d54c25b089f85ea387c8947f58f487df51283b55b4738bc5bcd96d41a3", [:rebar3], []},
+  "prometheus_ex": {:hex, :prometheus_ex, "1.0.0-alpha8", "ab26304e94d6d24cad725bbb0508468282eb72bdb483cacf8b286f979638aef9", [:mix], [{:prometheus, "~> 3.0.0-alpha8", [hex: :prometheus, optional: false]}]},
+  "prometheus_process_collector": {:hex, :prometheus_process_collector, "1.0.0-alpha8", "8cf3d41de106bce8b18ea5b7eeb10d60c664b1ff10e58d449f12271284068847", [:rebar3], [{:prometheus, "~> 3.0.0-alpha8", [hex: :prometheus, optional: false]}]},
   "ranch": {:hex, :ranch, "1.2.1", "a6fb992c10f2187b46ffd17ce398ddf8a54f691b81768f9ef5f461ea7e28c762", [:make], []}}

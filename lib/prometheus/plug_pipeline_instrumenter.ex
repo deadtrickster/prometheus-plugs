@@ -27,7 +27,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
 
   Currently maintains two metrics.
    - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
-   - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
+   - `http_request_duration_<duration_unit>` - The HTTP request latencies in <duration_unit>. This one is a histogram.
 
   ### Configuration
 
@@ -53,8 +53,17 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     duration_buckets: [10, 100, 1_000, 10_000, 100_000,
                        300_000, 500_000, 750_000, 1_000_000,
                        1_500_000, 2_000_000, 3_000_000],
-    registry: :default
+    registry: :default,
+    duration_unit: :microseconds
   ```
+
+  Available duration units:
+   - microseconds;
+   - milliseconds;
+   - seconds;
+   - minutes;
+   - hours;
+   - days.
 
   In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label.
   Label value can be generated using custom function. In order to create a custom label simply provide a fun reference
@@ -73,7 +82,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   labels: [:status_class, :request_path]
   ```
 
-  Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
+  Bear in mind that bounds are ***<duration_unit>***.
   """
 
   ## TODO: instrumenter for single plug(decorator)
@@ -85,7 +94,8 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   use Prometheus.Metric
   use Prometheus.Config, [labels: [:status_class, :method, :host, :scheme],
                           duration_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
-                          registry: :default]
+                          registry: :default,
+                          duration_unit: :microseconds]
 
   defmacro __using__(_opts) do
     module_name = __CALLER__.module
@@ -94,6 +104,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     labels = Config.labels(module_name)
     nlabels = normalize_labels(labels)
     registry = Config.registry(module_name)
+    duration_unit = Config.duration_unit(module_name)
 
     quote do
 
@@ -108,8 +119,8 @@ defmodule Prometheus.PlugPipelineInstrumenter do
                          help: "Total number of HTTP requests made.",
                          labels: unquote(nlabels),
                          registry: unquote(registry)])
-        Histogram.declare([name: :http_request_duration_microseconds,
-                           help: "The HTTP request latencies in microseconds.",
+        Histogram.declare([name: unquote(:"http_request_duration_#{duration_unit}"),
+                           help: "The HTTP request latencies in #{unquote(duration_unit)}.",
                            labels: unquote(nlabels),
                            buckets: unquote(request_duration_buckets),
                            registry: unquote(registry)])
@@ -119,7 +130,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
       end
 
       def call(conn, labels) do
-        start = current_time()
+        start = :erlang.monotonic_time
 
         Conn.register_before_send(conn, fn conn ->
           labels = unquote(construct_labels(labels))
@@ -128,25 +139,18 @@ defmodule Prometheus.PlugPipelineInstrumenter do
                        name: :http_requests_total,
                        labels: labels])
 
-          stop = current_time()
-          diff = time_diff(start, stop)
+          stop = :erlang.monotonic_time
+          diff = stop - start
 
           Histogram.observe([registry: unquote(registry),
-                             name: :http_request_duration_microseconds,
+                             name: unquote(:"http_request_duration_#{duration_unit}"),
                              labels: labels], diff)
 
           conn
         end)
       end
 
-      # TODO: remove this once Plug supports only Elixir 1.2.
-      if function_exported?(:erlang, :monotonic_time, 0) do
-        defp current_time, do: :erlang.monotonic_time
-        defp time_diff(start, stop), do: (stop - start) |> :erlang.convert_time_unit(:native, :micro_seconds)
-      else
-        defp current_time, do: :os.timestamp()
-        defp time_diff(start, stop), do: :timer.now_diff(stop, start)
-      end
+      
     end
   end
 

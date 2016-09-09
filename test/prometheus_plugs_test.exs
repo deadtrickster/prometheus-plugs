@@ -49,15 +49,17 @@ defmodule PrometheusPlugsTest do
                                              registry: :default,
                                              labels: ['success', "GET", "www.example.com", :http]])
 
-    assert sum > 0
+    assert (sum > 1_000_000 and sum < 1_200_000)
     assert 13 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert {buckets, sum} = Histogram.value([name: :http_request_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :http_request_duration_seconds,
                                              registry: :qwe,
                                              labels: ["GET", 12]])
 
-    assert sum > 0
+    IO.puts(sum)
+
+    assert (sum > 1.0 and sum < 1.2)
     assert 3 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
   end
