@@ -35,13 +35,14 @@ defmodule Prometheus.VeryImportantPlug do
 
   import Plug.Conn
 
-  def init(_opts) do
+  def init(sleep) do
+    sleep
   end
 
-  def call(conn, _opts) do
+  def call(conn, sleep) do
     case conn.path_info do
       ["qwe", "qwe"] ->
-        Process.sleep(1000)
+        Process.sleep(sleep)
         put_private(conn, :vip_kind, :qwe)
       _ ->
         put_private(conn, :vip_kind, :other)
@@ -51,12 +52,14 @@ defmodule Prometheus.VeryImportantPlug do
 end
 
 Application.put_env(:prometheus, Prometheus.VeryImportantPlugCounter,
-  plug: Prometheus.VeryImportantPlug,
   counter: :vip_only_counter,
   labels: [:vip_kind])
 
 defmodule Prometheus.VeryImportantPlugCounter do
   use Prometheus.PlugInstrumenter
+
+  plug Prometheus.VeryImportantPlug, 1000
+  plug Plug.RequestId
 
   def label_value(:vip_kind, {conn, _}) do
     conn.private[:vip_kind]
@@ -64,7 +67,6 @@ defmodule Prometheus.VeryImportantPlugCounter do
 end
 
 Application.put_env(:prometheus, Prometheus.VeryImportantPlugHistogram,
-  plug: Prometheus.VeryImportantPlugCounter,
   histogram: :vip_only_histogram_microseconds,
   labels: [:vip_kind],
   histogram_buckets: [100, 200],
@@ -73,19 +75,22 @@ Application.put_env(:prometheus, Prometheus.VeryImportantPlugHistogram,
 defmodule Prometheus.VeryImportantPlugHistogram do
   use Prometheus.PlugInstrumenter
 
+  plug Prometheus.VeryImportantPlugCounter
+
   def label_value(:vip_kind, {conn, _}) do
     conn.private[:vip_kind]
   end
 end
 
 Application.put_env(:prometheus, Prometheus.VeryImportantPlugInstrumenter,
-  plug: Prometheus.VeryImportantPlugHistogram,
   counter: :vip_counter,
   histogram: :vip_histogram,
   duration_unit: :seconds)
 
 defmodule Prometheus.VeryImportantPlugInstrumenter do
   use Prometheus.PlugInstrumenter
+
+  plug Prometheus.VeryImportantPlugHistogram
 end
 
 defmodule HelloWorldPlug do

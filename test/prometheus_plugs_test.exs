@@ -69,6 +69,7 @@ defmodule PrometheusPlugsTest do
     assert 4 = length(:ets.tab2list(:prometheus_counter_table))
 
     conn = call(conn(:get, "/"))
+    assert conn |> get_resp_header("x-request-id")
     assert conn.resp_body == "Hello World!"
 
     assert 1 == Counter.value([name: :vip_only_counter,
@@ -107,7 +108,7 @@ defmodule PrometheusPlugsTest do
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert {buckets, sum} = Histogram.value([name: :vip_histogram])
-    IO.puts(sum)
+
     assert (sum > 1.0 and sum < 1.2)
     assert 13 = length(buckets)
     assert 2 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
