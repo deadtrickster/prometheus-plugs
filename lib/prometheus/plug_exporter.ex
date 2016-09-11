@@ -15,6 +15,12 @@ defmodule Prometheus.PlugExporter do
   plug MetricsPlugExporter
   ```
 
+  **Do not add to Phoenix Router pipelines!** You will be getting 404!
+  ```
+  Note that router pipelines are only invoked after a route is found.
+  No plug is invoked in case no matches were found.
+  ```
+
   ### Metrics
 
   Also maintains telemetry metrics:
@@ -25,19 +31,16 @@ defmodule Prometheus.PlugExporter do
 
   ### Configuration
 
-  Plugs exporter can be configured via PlugsExporter key of prometheus app env.
+  Plugs exporter can be configured via PlugsExporter key of `:prometheus` app env.
 
   Default configuration:
 
   ```elixir
-
   config :prometheus, MetricsPlugExporter, # (you should replace this with the name of your plug)
     path: "/metrics",
     format: :text,
     registry: :default
   ```
-
-  Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
   """
 
   require Logger
