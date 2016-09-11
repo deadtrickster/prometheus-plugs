@@ -1,5 +1,5 @@
 # Prometheus.io Plugs Instrumenter/Exporter
-[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs) [![Build Status](https://travis-ci.org/deadtrickster/prometheus-plugs.svg?branch=version-1)](https://travis-ci.org/deadtrickster/prometheus-plugs)  [![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_plugs/1.0.0-alpha4/)
+[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs) [![Build Status](https://travis-ci.org/deadtrickster/prometheus-plugs.svg?branch=version-1)](https://travis-ci.org/deadtrickster/prometheus-plugs)  [![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_plugs/1.0.0-alpha8/)
 
 Elixir Plug integration for [prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
@@ -65,7 +65,7 @@ The package can be installed as:
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:prometheus_plugs, "~> 1.0.0-alpha4"}]
+          [{:prometheus_plugs, "~> 1.0.0-alpha8"}]
         end
 
   2. Ensure prometheus is started before your application:
