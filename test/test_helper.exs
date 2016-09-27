@@ -25,7 +25,8 @@ end
 Application.put_env(:prometheus, Prometheus.TestPlugExporterCustomConfig,
   format: :protobuf,
   path: "/metrics_qwe",
-  registry: :qwe)
+  registry: :qwe,
+  auth: {:basic, "qwe", "qwe"})
 
 defmodule Prometheus.TestPlugExporterCustomConfig do
   use Prometheus.PlugExporter

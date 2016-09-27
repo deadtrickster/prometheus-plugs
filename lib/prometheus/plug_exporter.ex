@@ -24,8 +24,8 @@ defmodule Prometheus.PlugExporter do
   ### Metrics
 
   Also maintains telemetry metrics:
-   - telemetry_scrape_duration_seconds
-   - telemetry_scrape_size_bytes
+  - telemetry_scrape_duration_seconds
+  - telemetry_scrape_size_bytes
 
   Do not forget to call `setup/0` before using plug, for example on application start!
 
@@ -39,7 +39,14 @@ defmodule Prometheus.PlugExporter do
   config :prometheus, MetricsPlugExporter, # (you should replace this with the name of your plug)
     path: "/metrics",
     format: :text,
-    registry: :default
+    registry: :default,
+    auth: false
+  ```
+
+  Export endpoint can be optionally secured using HTTP Basic Authentication:
+
+  ```elixir
+    auth: {:basic, "username", "password"}
   ```
   """
 
@@ -48,7 +55,8 @@ defmodule Prometheus.PlugExporter do
   use Prometheus.Metric
   use Prometheus.Config, [path: "/metrics",
                           format: :text,
-                          registry: :default]
+                          registry: :default,
+                          auth: false]
 
   ## TODO: support multiple endpoints [for example separate endpoint for each registry]
   ##  endpoints: [[registry: :qwe,
@@ -62,6 +70,7 @@ defmodule Prometheus.PlugExporter do
     registry = Config.registry(module_name)
     path = Plug.Router.Utils.split(Config.path(module_name))
     format = normalize_format(Config.format(module_name))
+    auth = Config.auth(module_name)
 
     content_type = format.content_type
     labels = [registry, format.content_type]
@@ -90,11 +99,7 @@ defmodule Prometheus.PlugExporter do
       def call(conn, _opts) do
         case conn.path_info do
           unquote(path) ->
-            scrape = scrape_data()
-            conn
-            |> put_resp_content_type(unquote(content_type), nil)
-            |> send_resp(200, scrape)
-            |> halt
+            unquote(handle_auth(auth, content_type))
           _ ->
             conn
         end
@@ -117,6 +122,60 @@ defmodule Prometheus.PlugExporter do
 
         scrape
       end
+
+      unquote(
+        case auth do
+          {:basic, _, _} -> quote do
+              ## borrowed from https://github.com/CultivateHQ/basic_auth
+              ## The MIT License (MIT)
+              ## Copyright (c) 2015 Mark Connell
+
+              defp valid_basic_credentials?(["Basic " <> encoded_string], username, password) do
+                Base.decode64!(encoded_string) == "#{username}:#{password}"
+              end
+              defp valid_basic_credentials?(_, _, _) do
+                false
+              end
+
+              ## end of basic_auth code
+            end
+
+          _ -> :ok
+        end)
+    end
+  end
+
+  defp handle_auth(auth, content_type) do
+    case auth do
+      false ->
+        send_metrics(content_type)
+      {:basic, username, password} -> quote do
+          if valid_basic_credentials?(Plug.Conn.get_req_header(conn, "authorization"),
+                unquote(username),
+                unquote(password)) do
+            unquote(send_metrics(content_type))
+          else
+            unquote(send_unauthorized("metrics"))
+          end
+        end
+    end
+  end
+
+  defp send_metrics(content_type) do
+    quote do
+      scrape = scrape_data()
+      conn
+      |> put_resp_content_type(unquote(content_type), nil)
+      |> send_resp(200, scrape)
+      |> halt
+    end
+  end
+
+  defp send_unauthorized(realm) do
+    quote do
+      Plug.Conn.put_resp_header(conn, "www-authenticate", "Basic realm=\"#{unquote(realm)}\"")
+      |> Plug.Conn.send_resp(401, "401 Unauthorized")
+      |> Plug.Conn.halt
     end
   end
 

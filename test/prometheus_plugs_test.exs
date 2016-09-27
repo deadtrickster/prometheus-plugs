@@ -130,8 +130,14 @@ defmodule PrometheusPlugsTest do
     assert {_,_} = :binary.match(conn.resp_body,
       "telemetry_scrape_duration_seconds_count{registry=\"default\",content_type=\"text/plain; version=0.0.4\"} 1")
 
-    call(conn(:get, "/metrics_qwe"))
     conn = call(conn(:get, "/metrics_qwe"))
+    assert conn.status == 401
+
+    auth_header_content = "Basic " <> Base.encode64("qwe:qwe")
+
+    conn = conn(:get, "/metrics_qwe")
+    |> put_req_header("authorization", auth_header_content)
+    |> call
 
     assert [Prometheus.Format.Protobuf.content_type] == conn |> get_resp_header("content-type")
     assert conn.resp_body > 0 ## TODO: decode and check protobuf resp body
