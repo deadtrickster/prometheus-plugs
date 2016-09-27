@@ -47,7 +47,14 @@ Then we add exporter to MyApp pipeline:
 plug MyApp.MetricsExporter
 ```
 
-You can configure path, export format and Prometheus registry via `:prometheus` app environment. For more information please see `Prometheus.PlugExporter` module documenataion.
+You can configure path, export format and Prometheus registry via `:prometheus` app environment. 
+For more information please see `Prometheus.PlugExporter` module documentation.
+
+Export endpoint can be secured using HTTP Basic Authentication:
+
+```elixir
+  auth: {:basic, "username", "password"}
+```
 
 ## Integrations / Collectors / Instrumenters
  - [Ecto collector](https://github.com/deadtrickster/prometheus-ecto)
@@ -65,7 +72,7 @@ The package can be installed as:
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:prometheus_plugs, "~> 1.0.0-rc1"}]
+          [{:prometheus_plugs, "~> 1.0.0"}]
         end
 
   2. Ensure prometheus is started before your application:

@@ -50,7 +50,7 @@ defmodule PrometheusPlugsTest do
                                              labels: ['success', "GET", "www.example.com", :http]])
 
     assert (sum > 1_000_000 and sum < 1_200_000)
-    assert 13 = length(buckets)
+    assert 20 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert {buckets, sum} = Histogram.value([name: :http_request_duration_seconds,
@@ -87,7 +87,7 @@ defmodule PrometheusPlugsTest do
 
     assert {buckets, sum} = Histogram.value([name: :vip_histogram])
     assert sum > 0
-    assert 13 = length(buckets)
+    assert 20 = length(buckets)
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
 
@@ -110,7 +110,7 @@ defmodule PrometheusPlugsTest do
     assert {buckets, sum} = Histogram.value([name: :vip_histogram])
 
     assert (sum > 1.0 and sum < 1.2)
-    assert 13 = length(buckets)
+    assert 20 = length(buckets)
     assert 2 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
   end
 
