@@ -1,95 +1,62 @@
-# Prometheus Plugs [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs)
+# Prometheus.io Plugs Instrumenter/Exporter
+[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs) [![Build Status](https://travis-ci.org/deadtrickster/prometheus-plugs.svg?branch=version-1)](https://travis-ci.org/deadtrickster/prometheus-plugs)  [![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_plugs/1.0.0-alpha8/)
 
-Elixir plugs for [prometheus.erl](https://github.com/deadtrickster/prometheus.erl)
+Elixir Plug integration for [prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
 ***TL;DR*** [Example app](https://github.com/deadtrickster/prometheus-plugs-example)
 
-## Plugs
+### Instrumentation
 
-Prometheus Plugs currently comes with two Plugs. One is for collecting http metrics while another provides endpoint for scraping by Prometheus daemon.
-
-#### Prometheus.PlugsInstrumenter
-
-Currently maintains two metrics.
- - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
- - `http_request_duration_microseconds` - The HTTP request latencies in microseconds. This one is a histogram.
- 
-Setup
+To instrument whole plug pipeline use `Prometheus.PlugPipelineInstrumenter`:
 
 ```elixir
-# on app startup (e.g. supervisor setup)
-Prometheus.PlugsInstrumenter.setup()
-
-# in your plugs pipeline
-plug Prometheus.PlugsInstrumenter
-```
-
-Plugs instrumenter can be configured via PlugsInstrumenter key of prometheus app env.
-
-All metrics support configurable labels:
-
- - status_code - http code
- - status_class - http code class, like "success", "redirect", "client-error", etc
- - method - http method
- - host - requested host
- - port - requested port
- - scheme - request scheme (like http or https)
-
-Default configuration:
-
-```elixir
-config :prometheus, PlugsInstrumenter,
-  labels: [:status_class, :method, :host, :scheme],
-  duration_buckets:[10, 100, 1_000, 10_000, 100_000,
-                    300_000, 500_000, 750_000, 1_000_000,
-                    1_500_000, 2_000_000, 3_000_000],
-  registry: :default
-```
-
-In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label.
-In order to create a custom label simply provide a fun as either a key-value
-pair where the value is a fun which will be given the label and conn as
-parameters:
-
-``` elixir
-defmodule CustomLabels do
-  def label_value(key, conn) do
-    Map.get(conn.private, key, "unknown") |> to_string
-  end
-
-  def phoenix_controller_action(%Plug.Conn{private: private}) do
-    case [private[:phoenix_controller], private[:phoenix_action]] do
-      [nil, nil] -> "unknown"
-      [controller, action] -> "#{controller}/#{action}"
-    end
-  end
+defmodule MyApp.Endpoint.PipelineInstrumenter do
+  use Prometheus.PlugPipelineInstrumenter
 end
-
-labels: [:status_class, phoenix_controller: CustomLabels, phoenix_controller_action: {CustomLabels, :phoenix_controller_action}]
 ```
 
-Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
-
-#### Plug.PrometheusExporter
-
-Exports metrics in text format via configurable endpoint:
+To instrument just a single plug use `Prometheus.PlugInstrumenter`:
 
 ```elixir
-# on app startup (e.g. supervisor setup)
-Plug.PrometheusExporter.setup()
-
-# in your plugs pipeline
-plug Plug.PrometheusExporter
+defmodule MyApp.CoolPlugInstrumenter do
+  use Prometheus.PlugInstrumenter, [plug: Guardian.Plug.EnsureAuthenticated,
+                                    counter: :guardian_ensure_authenticated_total,
+                                    histogram: :guardian_ensure_authenticated_duration_microseconds,
+                                    labels: [:authenticated]]
+end
 ```
 
-Defautl Configuration:
+Both modules implement plug interface and `Prometheus.PlugInstrumenter` generates proxy for specified plug so you'll need to replace instrumented plug with your instrumenter in pipeline.
+
+Instrumenters configured via `:prometheus` app environment. Please consult respective modules documentation on
+what options are available.
+
+### Exporting
+
+To export metric we first have to create a plug that will serve scraping requests.
 
 ```elixir
-config :prometheus, PlugsExporter,
-  path: "/metrics",
-  format: :text,
-  registry: :default
+defmodule MyApp.MetricsExporter do
+  use Prometheus.PlugExporter
+end
 ```
+
+Then we add exporter to MyApp pipeline:
+
+```elixir
+plug MyApp.MetricsExporter
+```
+
+You can configure path, export format and Prometheus registry via `:prometheus` app environment. For more information please see `Prometheus.PlugExporter` module documenataion.
+
+## Integrations / Collectors / Instrumenters
+ - [Ecto collector](https://github.com/deadtrickster/prometheus-ecto)
+ - [Plugs Instrumenter/Exporter](https://github.com/deadtrickster/prometheus-plugs)
+ - [Elli middleware](https://github.com/elli-lib/elli_prometheus)
+ - [Fuse plugin](https://github.com/jlouis/fuse#fuse_stats_prometheus)
+ - [Phoenix instrumenter](https://github.com/deadtrickster/prometheus-phoenix)
+ - [Process Info Collector](https://github.com/deadtrickster/prometheus_process_collector.erl)
+ - [RabbitMQ Exporter](https://github.com/deadtrickster/prometheus_rabbitmq_exporter)
 
 ## Installation
 
@@ -98,7 +65,7 @@ The package can be installed as:
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:prometheus_plugs, "~> 0.7"}]
+          [{:prometheus_plugs, "~> 1.0.0-alpha8"}]
         end
 
   2. Ensure prometheus is started before your application:

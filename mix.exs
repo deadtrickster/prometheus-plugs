@@ -1,7 +1,7 @@
 defmodule PrometheusPlugs.Mixfile do
   use Mix.Project
 
-  @version "0.10.0"
+  @version "1.0.0-rc1"
 
   def project do
     [app: :prometheus_plugs,
@@ -12,7 +12,7 @@ defmodule PrometheusPlugs.Mixfile do
      deps: deps,
      description: description,
      package: package,
-     docs: [extras: ["README.md"], main: "readme",
+     docs: [main: "api-reference",
             source_ref: "v#{@version}",
             source_url: "https://github.com/deadtrickster/prometheus-plugs"]]
   end
@@ -43,7 +43,7 @@ defmodule PrometheusPlugs.Mixfile do
      {:plug, "~> 1.0"},
      {:ex_doc, "~> 0.11", only: :dev},
      {:earmark, ">= 0.0.0", only: :dev},
-     {:prometheus_ex, "~> 0.0.3"},
-     {:prometheus_process_collector, "~> 0.2", optional: true}]
+     {:prometheus_ex, "~> 1.0.0-rc1"},
+     {:prometheus_process_collector, "~> 1.0.0-rc1", optional: true}]
   end
 end
