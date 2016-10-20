@@ -38,7 +38,7 @@ defmodule Prometheus.PlugExporter do
   ```elixir
   config :prometheus, MetricsPlugExporter, # (you should replace this with the name of your plug)
     path: "/metrics",
-    format: :text,
+    format: :auto, ## or :protobuf, or :text
     registry: :default,
     auth: false
   ```
@@ -54,7 +54,7 @@ defmodule Prometheus.PlugExporter do
 
   use Prometheus.Metric
   use Prometheus.Config, [path: "/metrics",
-                          format: :text,
+                          format: :auto,
                           registry: :default,
                           auth: false]
 
@@ -69,11 +69,8 @@ defmodule Prometheus.PlugExporter do
 
     registry = Config.registry(module_name)
     path = Plug.Router.Utils.split(Config.path(module_name))
-    format = normalize_format(Config.format(module_name))
     auth = Config.auth(module_name)
-
-    content_type = format.content_type
-    labels = [registry, format.content_type]
+    format = normalize_format(Config.format(module_name))
 
     quote do
 
@@ -99,28 +96,49 @@ defmodule Prometheus.PlugExporter do
       def call(conn, _opts) do
         case conn.path_info do
           unquote(path) ->
-            unquote(handle_auth(auth, content_type))
+            unquote(handle_auth(auth))
           _ ->
             conn
         end
       end
 
-      defp scrape_data do
+      defp scrape_data(conn) do
+        {content_type, format} = negotiate(conn)
+        labels = [unquote(registry), content_type]
+
         scrape = Summary.observe_duration(
           [registry: unquote(registry),
            name: :telemetry_scrape_duration_seconds,
-           labels: unquote(labels)],
+           labels: labels],
           fn () ->
-            unquote(format).format(unquote(registry))
+            format.format(unquote(registry))
           end)
 
         Summary.observe(
           [registry: unquote(registry),
            name: :telemetry_scrape_size_bytes,
-           labels: unquote(labels)],
+           labels: labels],
           :erlang.iolist_size(scrape))
 
-        scrape
+        {content_type, scrape}
+      end
+
+      defp negotiate(conn) do
+        unquote(if format == :auto do
+          quote do
+            try do
+              [accept] = Plug.Conn.get_req_header(conn, "accept")
+              format = :accept_header.negotiate(accept,
+                [{:prometheus_text_format.content_type, :prometheus_text_format},
+                 {:prometheus_protobuf_format.content_type, :prometheus_protobuf_format}])
+              {format.content_type, format}
+            rescue
+              ErlangError -> {unquote(:prometheus_text_format.content_type), :prometheus_text_format}
+            end
+          end
+        else
+          {format.content_type, format}
+        end)
       end
 
       unquote(
@@ -145,15 +163,15 @@ defmodule Prometheus.PlugExporter do
     end
   end
 
-  defp handle_auth(auth, content_type) do
+  defp handle_auth(auth) do
     case auth do
       false ->
-        send_metrics(content_type)
+        send_metrics()
       {:basic, username, password} -> quote do
           if valid_basic_credentials?(Plug.Conn.get_req_header(conn, "authorization"),
                 unquote(username),
                 unquote(password)) do
-            unquote(send_metrics(content_type))
+            unquote(send_metrics())
           else
             unquote(send_unauthorized("metrics"))
           end
@@ -161,11 +179,11 @@ defmodule Prometheus.PlugExporter do
     end
   end
 
-  defp send_metrics(content_type) do
+  defp send_metrics() do
     quote do
-      scrape = scrape_data()
+      {content_type, scrape} = scrape_data(conn)
       conn
-      |> put_resp_content_type(unquote(content_type), nil)
+      |> put_resp_content_type(content_type, nil)
       |> send_resp(200, scrape)
       |> halt
     end
@@ -179,6 +197,7 @@ defmodule Prometheus.PlugExporter do
     end
   end
 
+  defp normalize_format(:auto), do: :auto
   defp normalize_format(:text), do: :prometheus_text_format
   defp normalize_format(:protobuf), do: :prometheus_protobuf_format
   defp normalize_format(Prometheus.Format.Text), do: :prometheus_text_format

@@ -118,6 +118,7 @@ defmodule PrometheusPlugsTest do
     conn = call(conn(:get, "/"))
     assert conn.resp_body == "Hello World!"
 
+    ## no accept header, exporter should fallback to text
     call(conn(:get, "/metrics"))
     conn = call(conn(:get, "/metrics"))
 
@@ -129,6 +130,26 @@ defmodule PrometheusPlugsTest do
       "telemetry_scrape_size_bytes_count{registry=\"default\",content_type=\"text/plain; version=0.0.4\"} 1")
     assert {_,_} = :binary.match(conn.resp_body,
       "telemetry_scrape_duration_seconds_count{registry=\"default\",content_type=\"text/plain; version=0.0.4\"} 1")
+
+
+    ## Prometheus server accept header
+    conn = conn(:get, "/metrics")
+    |> put_req_header("accept", "application/vnd.google.protobuf;" <>
+    "proto=io.prometheus.client.MetricFamily;encoding=delimited;q=0.7," <>
+    "text/plain;version=0.0.4;q=0.3," <>
+    "application/json;schema=\"prometheus/telemetry\";version=0.0.2;q=0.2," <>
+    "*/*;q=0.1")
+    |> call
+
+    assert [Prometheus.Format.Protobuf.content_type] == conn |> get_resp_header("content-type")
+
+     ## Chrome accept header
+    conn = conn(:get, "/metrics")
+    |> put_req_header("accept", "application/xml,application/xhtml+xml," <>
+        "text/html;q=0.9,text/plain;q=0.8,image/png,image/*;q=0.9,*/*;q=0.5")
+    |> call
+
+    assert [Prometheus.Format.Text.content_type] == conn |> get_resp_header("content-type")
 
     conn = call(conn(:get, "/metrics_qwe"))
     assert conn.status == 401
