@@ -5,7 +5,7 @@
 
 Elixir Plug integration for [prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
-***TL;DR*** [Example app](https://github.com/deadtrickster/prometheus-plugs-example)
+Quick introduction by [**@skosch**](https://github.com/skosch): [Monitoring Elixir apps in 2016: Prometheus/Grafana Step-by-Step Guide](http://aldusleaf.org/monitoring-elixir-apps-in-2016-prometheus-and-grafana/)
 
 ### Instrumentation
 
