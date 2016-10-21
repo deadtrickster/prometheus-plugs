@@ -7,6 +7,9 @@ Elixir Plug integration for [prometheus.ex](https://github.com/deadtrickster/pro
 
 Quick introduction by [**@skosch**](https://github.com/skosch): [Monitoring Elixir apps in 2016: Prometheus/Grafana Step-by-Step Guide](http://aldusleaf.org/monitoring-elixir-apps-in-2016-prometheus-and-grafana/)
 
+ - IRC: #elixir-lang on Freenode;
+ - [Slack](https://elixir-slackin.herokuapp.com/): #prometheus channel - [Browser](https://elixir-lang.slack.com/messages/prometheus) or App(slack://elixir-lang.slack.com/messages/prometheus).
+
 ### Instrumentation
 
 To instrument whole plug pipeline use `Prometheus.PlugPipelineInstrumenter`:
