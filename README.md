@@ -77,7 +77,7 @@ The package can be installed as:
   1. Add prometheus_plug to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:prometheus_plugs, "~> 1.0.0"}]
+          [{:prometheus_plugs, "~> 1.1.1"}]
         end
 
   2. Ensure prometheus is started before your application:
