@@ -1,7 +1,7 @@
 defmodule PrometheusPlugs.Mixfile do
   use Mix.Project
 
-  @version "1.1.1"
+  @version "1.1.2"
 
   def project do
     [app: :prometheus_plugs,
@@ -9,9 +9,9 @@ defmodule PrometheusPlugs.Mixfile do
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps,
-     description: description,
-     package: package,
+     deps: deps(),
+     description: description(),
+     package: package(),
      docs: [main: "api-reference",
             source_ref: "v#{@version}",
             source_url: "https://github.com/deadtrickster/prometheus-plugs"]]
