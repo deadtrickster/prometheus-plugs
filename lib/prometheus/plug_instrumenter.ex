@@ -24,7 +24,7 @@ defmodule Prometheus.PlugInstrumenter do
   2. Configuration:
 
   ```elixir
-  config :phoenix, EnsureAuthenticatedInstrumenter,
+  config :prometheus, EnsureAuthenticatedInstrumenter,
     counter: :guardian_ensure_authenticated_total,
     counter_help: "Total number of EnsureAuthenticated plug calls."
     histogram: :guardian_ensure_authenticated_duration_microseconds,
