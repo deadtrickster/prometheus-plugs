@@ -47,6 +47,6 @@ defmodule PrometheusPlugs.Mixfile do
      {:earmark, ">= 0.0.0", only: :dev},
      {:prometheus_ex, "~> 1.1"},
      {:accept, "~> 0.1"},
-     {:prometheus_process_collector, "~> 1.0.0", optional: true}]
+     {:prometheus_process_collector, "~> 1.1", optional: true}]
   end
 end
