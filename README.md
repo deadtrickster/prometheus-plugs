@@ -84,7 +84,7 @@ The package can be installed as:
   2. Ensure prometheus is started before your application:
 ```
         def application do
-          [applications: [:prometheus]]
+          [applications: [:prometheus_plugs]]
         end
 ```
 
