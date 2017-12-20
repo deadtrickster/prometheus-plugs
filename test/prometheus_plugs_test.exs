@@ -64,9 +64,11 @@ defmodule PrometheusPlugsTest do
 
   test "Plug instrumenter tests" do
     ## two histograms by Pipeline instrumenters and two by Plug instrumenters
-    assert 4 = length(:ets.tab2list(:prometheus_histogram_table))
+    ## 4 histogram mfs + 1 vip_histogram initialized to zeros because no metrics
+    ## TODO: remove
+    assert 5 = length(:ets.tab2list(:prometheus_histogram_table))
     ## two counters by Pipeline instrumenters and two by Plug instrumenters
-    assert 4 = length(:ets.tab2list(:prometheus_counter_table))
+    assert 5 = length(:ets.tab2list(:prometheus_counter_table))
 
     conn = call(conn(:get, "/"))
     assert conn |> get_resp_header("x-request-id")

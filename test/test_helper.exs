@@ -1,4 +1,5 @@
 ExUnit.start()
+:application.ensure_all_started(:plug)
 
 defmodule Prometheus.TestPlugPipelineInstrumenter do
   use Prometheus.PlugPipelineInstrumenter
