@@ -53,10 +53,12 @@ defmodule Prometheus.PlugExporter do
   require Logger
 
   use Prometheus.Metric
-  use Prometheus.Config, [path: "/metrics",
-                          format: :auto,
-                          registry: :default,
-                          auth: false]
+
+  use Prometheus.Config,
+    path: "/metrics",
+    format: :auto,
+    registry: :default,
+    auth: false
 
   ## TODO: support multiple endpoints [for example separate endpoint for each registry]
   ##  endpoints: [[registry: :qwe,
@@ -73,21 +75,24 @@ defmodule Prometheus.PlugExporter do
     format = normalize_format(Config.format(module_name))
 
     quote do
-
       @behaviour Plug
       import Plug.Conn
       use Prometheus.Metric
 
       def setup() do
-        Summary.declare([name: :telemetry_scrape_duration_seconds,
-                         help: "Scrape duration",
-                         labels: ["registry", "content_type"],
-                         registry: unquote(registry)])
+        Summary.declare(
+          name: :telemetry_scrape_duration_seconds,
+          help: "Scrape duration",
+          labels: ["registry", "content_type"],
+          registry: unquote(registry)
+        )
 
-        Summary.declare([name: :telemetry_scrape_size_bytes,
-                         help: "Scrape size, uncompressed",
-                         labels: ["registry", "content_type"],
-                         registry: unquote(registry)])
+        Summary.declare(
+          name: :telemetry_scrape_size_bytes,
+          help: "Scrape size, uncompressed",
+          labels: ["registry", "content_type"],
+          registry: unquote(registry)
+        )
       end
 
       def init(_opts) do
@@ -97,6 +102,7 @@ defmodule Prometheus.PlugExporter do
         case conn.path_info do
           unquote(path) ->
             unquote(handle_auth(auth))
+
           _ ->
             conn
         end
@@ -106,44 +112,58 @@ defmodule Prometheus.PlugExporter do
         {content_type, format} = negotiate(conn)
         labels = [unquote(registry), content_type]
 
-        scrape = Summary.observe_duration(
-          [registry: unquote(registry),
-           name: :telemetry_scrape_duration_seconds,
-           labels: labels],
-          fn () ->
-            format.format(unquote(registry))
-          end)
+        scrape =
+          Summary.observe_duration(
+            [
+              registry: unquote(registry),
+              name: :telemetry_scrape_duration_seconds,
+              labels: labels
+            ],
+            fn ->
+              format.format(unquote(registry))
+            end
+          )
 
         Summary.observe(
-          [registry: unquote(registry),
-           name: :telemetry_scrape_size_bytes,
-           labels: labels],
-          :erlang.iolist_size(scrape))
+          [registry: unquote(registry), name: :telemetry_scrape_size_bytes, labels: labels],
+          :erlang.iolist_size(scrape)
+        )
 
         {content_type, scrape}
       end
 
       defp negotiate(conn) do
-        unquote(if format == :auto do
-          quote do
-            try do
-              [accept] = Plug.Conn.get_req_header(conn, "accept")
-              format = :accept_header.negotiate(accept,
-                [{:prometheus_text_format.content_type, :prometheus_text_format},
-                 {:prometheus_protobuf_format.content_type, :prometheus_protobuf_format}])
-              {format.content_type, format}
-            rescue
-              ErlangError -> {unquote(:prometheus_text_format.content_type), :prometheus_text_format}
+        unquote(
+          if format == :auto do
+            quote do
+              try do
+                [accept] = Plug.Conn.get_req_header(conn, "accept")
+
+                format =
+                  :accept_header.negotiate(
+                    accept,
+                    [
+                      {:prometheus_text_format.content_type(), :prometheus_text_format},
+                      {:prometheus_protobuf_format.content_type(), :prometheus_protobuf_format}
+                    ]
+                  )
+
+                {format.content_type, format}
+              rescue
+                ErlangError ->
+                  {unquote(:prometheus_text_format.content_type()), :prometheus_text_format}
+              end
             end
+          else
+            {format.content_type, format}
           end
-        else
-          {format.content_type, format}
-        end)
+        )
       end
 
       unquote(
         case auth do
-          {:basic, _, _} -> quote do
+          {:basic, _, _} ->
+            quote do
               ## borrowed from https://github.com/CultivateHQ/basic_auth
               ## The MIT License (MIT)
               ## Copyright (c) 2015 Mark Connell
@@ -151,6 +171,7 @@ defmodule Prometheus.PlugExporter do
               defp valid_basic_credentials?(["Basic " <> encoded_string], username, password) do
                 Base.decode64!(encoded_string) == "#{username}:#{password}"
               end
+
               defp valid_basic_credentials?(_, _, _) do
                 false
               end
@@ -158,8 +179,10 @@ defmodule Prometheus.PlugExporter do
               ## end of basic_auth code
             end
 
-          _ -> :ok
-        end)
+          _ ->
+            :ok
+        end
+      )
     end
   end
 
@@ -167,10 +190,14 @@ defmodule Prometheus.PlugExporter do
     case auth do
       false ->
         send_metrics()
-      {:basic, username, password} -> quote do
-          if valid_basic_credentials?(Plug.Conn.get_req_header(conn, "authorization"),
-                unquote(username),
-                unquote(password)) do
+
+      {:basic, username, password} ->
+        quote do
+          if valid_basic_credentials?(
+               Plug.Conn.get_req_header(conn, "authorization"),
+               unquote(username),
+               unquote(password)
+             ) do
             unquote(send_metrics())
           else
             unquote(send_unauthorized("metrics"))
@@ -182,6 +209,7 @@ defmodule Prometheus.PlugExporter do
   defp send_metrics() do
     quote do
       {content_type, scrape} = scrape_data(conn)
+
       conn
       |> put_resp_content_type(content_type, nil)
       |> send_resp(200, scrape)
@@ -193,7 +221,7 @@ defmodule Prometheus.PlugExporter do
     quote do
       Plug.Conn.put_resp_header(conn, "www-authenticate", "Basic realm=\"#{unquote(realm)}\"")
       |> Plug.Conn.send_resp(401, "401 Unauthorized")
-      |> Plug.Conn.halt
+      |> Plug.Conn.halt()
     end
   end
 
