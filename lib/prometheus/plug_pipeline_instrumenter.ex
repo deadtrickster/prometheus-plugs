@@ -93,10 +93,12 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   require Prometheus.Contrib.HTTP
 
   use Prometheus.Metric
-  use Prometheus.Config, [labels: [:status_class, :method, :host, :scheme],
-                          duration_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
-                          registry: :default,
-                          duration_unit: :microseconds]
+
+  use Prometheus.Config,
+    labels: [:status_class, :method, :host, :scheme],
+    duration_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
+    registry: :default,
+    duration_unit: :microseconds
 
   defmacro __using__(_opts) do
     module_name = __CALLER__.module
@@ -108,50 +110,58 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     duration_unit = Config.duration_unit(module_name)
 
     quote do
-
       @behaviour Plug
       alias Plug.Conn
       use Prometheus.Metric
       require Prometheus.Contrib.HTTP
 
       def setup() do
+        Counter.declare(
+          name: :http_requests_total,
+          help: "Total number of HTTP requests made.",
+          labels: unquote(nlabels),
+          registry: unquote(registry)
+        )
 
-        Counter.declare([name: :http_requests_total,
-                         help: "Total number of HTTP requests made.",
-                         labels: unquote(nlabels),
-                         registry: unquote(registry)])
-        Histogram.declare([name: unquote(:"http_request_duration_#{duration_unit}"),
-                           help: "The HTTP request latencies in #{unquote(duration_unit)}.",
-                           labels: unquote(nlabels),
-                           buckets: unquote(request_duration_buckets),
-                           registry: unquote(registry)])
+        Histogram.declare(
+          name: unquote(:"http_request_duration_#{duration_unit}"),
+          help: "The HTTP request latencies in #{unquote(duration_unit)}.",
+          labels: unquote(nlabels),
+          buckets: unquote(request_duration_buckets),
+          registry: unquote(registry)
+        )
       end
 
       def init(_opts) do
       end
 
       def call(conn, labels) do
-        start = :erlang.monotonic_time
+        start = :erlang.monotonic_time()
 
         Conn.register_before_send(conn, fn conn ->
           labels = unquote(construct_labels(labels))
 
-          Counter.inc([registry: unquote(registry),
-                       name: :http_requests_total,
-                       labels: labels])
+          Counter.inc(
+            registry: unquote(registry),
+            name: :http_requests_total,
+            labels: labels
+          )
 
-          stop = :erlang.monotonic_time
+          stop = :erlang.monotonic_time()
           diff = stop - start
 
-          Histogram.observe([registry: unquote(registry),
-                             name: unquote(:"http_request_duration_#{duration_unit}"),
-                             labels: labels], diff)
+          Histogram.observe(
+            [
+              registry: unquote(registry),
+              name: unquote(:"http_request_duration_#{duration_unit}"),
+              labels: labels
+            ],
+            diff
+          )
 
           conn
         end)
       end
-
-
     end
   end
 
@@ -173,46 +183,55 @@ defmodule Prometheus.PlugPipelineInstrumenter do
       conn.status
     end
   end
+
   defp label_value(:status_code) do
     quote do
       conn.status
     end
   end
+
   defp label_value(:status_class) do
     quote do
       Prometheus.Contrib.HTTP.status_class(conn.status)
     end
   end
+
   defp label_value(:method) do
     quote do
       conn.method
     end
   end
+
   defp label_value(:host) do
     quote do
       conn.host
     end
   end
+
   defp label_value(:scheme) do
     quote do
       conn.scheme
     end
   end
+
   defp label_value(:port) do
     quote do
       conn.port
     end
   end
+
   defp label_value({label, {module, fun}}) do
     quote do
       unquote(module).unquote(fun)(unquote(label), conn)
     end
   end
+
   defp label_value({label, module}) do
     quote do
       unquote(module).label_value(unquote(label), conn)
     end
   end
+
   defp label_value(label) do
     quote do
       label_value(unquote(label), conn)

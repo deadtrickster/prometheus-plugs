@@ -91,14 +91,15 @@ defmodule Prometheus.PlugInstrumenter do
   require Logger
   require Prometheus.Contrib.HTTP
 
-  use Prometheus.Config, [counter: false,
-                          counter_help: "",
-                          histogram: false,
-                          histogram_help: "",
-                          histogram_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
-                          labels: [],
-                          registry: :default,
-                          duration_unit: :undefined]
+  use Prometheus.Config,
+    counter: false,
+    counter_help: "",
+    histogram: false,
+    histogram_help: "",
+    histogram_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
+    labels: [],
+    registry: :default,
+    duration_unit: :undefined
 
   use Prometheus.Metric
 
@@ -120,7 +121,6 @@ defmodule Prometheus.PlugInstrumenter do
     end
 
     quote location: :keep do
-
       @behaviour Plug
       Module.register_attribute(__MODULE__, :plugs, accumulate: true)
 
@@ -128,27 +128,33 @@ defmodule Prometheus.PlugInstrumenter do
       import Prometheus.PlugInstrumenter
 
       def setup() do
-
-        unquote(if counter do
-          quote do
-            Counter.declare([name: unquote(counter),
-                             help: unquote(counter_help),
-                             labels: unquote(nlabels),
-                             registry: unquote(registry)])
+        unquote(
+          if counter do
+            quote do
+              Counter.declare(
+                name: unquote(counter),
+                help: unquote(counter_help),
+                labels: unquote(nlabels),
+                registry: unquote(registry)
+              )
+            end
           end
-        end)
+        )
 
-        unquote(if histogram do
-          quote do
-            Histogram.declare([name: unquote(histogram),
-                               help: unquote(histogram_help),
-                               labels: unquote(nlabels),
-                               buckets: unquote(histogram_buckets),
-                               registry: unquote(registry),
-                               duration_unit: unquote(duration_unit)])
+        unquote(
+          if histogram do
+            quote do
+              Histogram.declare(
+                name: unquote(histogram),
+                help: unquote(histogram_help),
+                labels: unquote(nlabels),
+                buckets: unquote(histogram_buckets),
+                registry: unquote(registry),
+                duration_unit: unquote(duration_unit)
+              )
+            end
           end
-        end)
-
+        )
       end
 
       def init(opts) do
@@ -156,47 +162,54 @@ defmodule Prometheus.PlugInstrumenter do
       end
 
       def call(conn, state) do
-
-        unquote(if histogram do
-          quote do
-            start = :erlang.monotonic_time
+        unquote(
+          if histogram do
+            quote do
+              start = :erlang.monotonic_time()
+            end
           end
-        end)
+        )
 
         conn = call_pipeline(conn)
 
-        unquote(if histogram do
-          quote do
-            diff = (:erlang.monotonic_time - start)
+        unquote(
+          if histogram do
+            quote do
+              diff = :erlang.monotonic_time() - start
+            end
           end
-        end)
+        )
 
         labels = unquote(construct_labels(labels))
 
-        unquote(if histogram do
-          quote do
-            Histogram.observe([name: unquote(histogram),
-                               labels: labels,
-                               registry: unquote(registry)],
-              diff)
+        unquote(
+          if histogram do
+            quote do
+              Histogram.observe(
+                [name: unquote(histogram), labels: labels, registry: unquote(registry)],
+                diff
+              )
+            end
           end
-        end)
+        )
 
-        unquote(if counter do
-          quote do
-            Counter.inc([name: unquote(counter),
-                         labels: labels,
-                         registry: unquote(registry)])
+        unquote(
+          if counter do
+            quote do
+              Counter.inc(
+                name: unquote(counter),
+                labels: labels,
+                registry: unquote(registry)
+              )
+            end
           end
-        end)
+        )
 
         conn
-
       end
 
       @before_compile Prometheus.PlugInstrumenter
     end
-
   end
 
   @doc """
@@ -236,15 +249,16 @@ defmodule Prometheus.PlugInstrumenter do
       unquote(module).unquote(fun)(unquote(label), {conn, state})
     end
   end
+
   defp label_value({label, module}) do
     quote do
       unquote(module).label_value(unquote(label), {conn, state})
     end
   end
+
   defp label_value(label) do
     quote do
       label_value(unquote(label), {conn, state})
     end
   end
-
 end
