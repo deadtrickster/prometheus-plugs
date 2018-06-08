@@ -108,6 +108,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     nlabels = normalize_labels(labels)
     registry = Config.registry(module_name)
     duration_unit = Config.duration_unit(module_name)
+    time_unit = time_unit(duration_unit)
 
     quote do
       @behaviour Plug
@@ -136,7 +137,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
       end
 
       def call(conn, labels) do
-        start = :erlang.monotonic_time()
+        start = :erlang.monotonic_time(unquote(time_unit))
 
         Conn.register_before_send(conn, fn conn ->
           labels = unquote(construct_labels(labels))
@@ -147,7 +148,8 @@ defmodule Prometheus.PlugPipelineInstrumenter do
             labels: labels
           )
 
-          stop = :erlang.monotonic_time()
+          stop = :erlang.monotonic_time(unquote(time_unit))
+
           diff = stop - start
 
           Histogram.observe(
@@ -164,6 +166,11 @@ defmodule Prometheus.PlugPipelineInstrumenter do
       end
     end
   end
+
+  defp time_unit(:microseconds), do: :microsecond
+  defp time_unit(:milliseconds), do: :millisecond
+  defp time_unit(:seconds), do: :second
+  defp time_unit(_other), do: :second
 
   defp normalize_labels(labels) do
     for label <- labels do
