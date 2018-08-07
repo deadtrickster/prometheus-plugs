@@ -5,7 +5,7 @@
 
 Elixir Plug integration for [prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
-Quick introduction by [**@skosch**](https://github.com/skosch): [Monitoring Elixir apps in 2016: Prometheus/Grafana Step-by-Step Guide](http://aldusleaf.org/monitoring-elixir-apps-in-2016-prometheus-and-grafana/)
+Quick introduction by [**@skosch**](https://github.com/skosch): [Monitoring Elixir apps in 2016: Prometheus/Grafana Step-by-Step Guide](https://aldusleaf.org/2016-09-30-monitoring-elixir-apps-in-2016-prometheus-and-grafana.html)
 
  - IRC: #elixir-lang on Freenode;
  - [Slack](https://elixir-slackin.herokuapp.com/): #prometheus channel - [Browser](https://elixir-lang.slack.com/messages/prometheus) or App(slack://elixir-lang.slack.com/messages/prometheus).
