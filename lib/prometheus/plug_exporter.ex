@@ -169,7 +169,10 @@ defmodule Prometheus.PlugExporter do
               ## Copyright (c) 2015 Mark Connell
 
               defp valid_basic_credentials?(["Basic " <> encoded_string], username, password) do
-                Base.decode64!(encoded_string) == "#{username}:#{password}"
+                # hash strings just in case compiler optimizes out secure compare constant time implementation
+                hash1 = :crypto.hash(:sha256, Base.decode64!(encoded_string))
+                hash2 = :crypto.hash(:sha256, "#{username}:#{password}")
+                Plug.Crypto.secure_compare(hash1, hash2)
               end
 
               defp valid_basic_credentials?(_, _, _) do
