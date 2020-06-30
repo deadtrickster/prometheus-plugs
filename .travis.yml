@@ -41,4 +41,4 @@ jobs:
 before_script:
   - mix deps.get --only test
 script:
-  - ./bin/checks.sh
+  - mix test
