@@ -1,5 +1,5 @@
 # Prometheus.io Plugs Instrumenter/Exporter
-[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs) 
+[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs)
 [![Hex.pm](https://img.shields.io/hexpm/dt/prometheus_plugs.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_plugs)
 [![Build Status](https://travis-ci.org/deadtrickster/prometheus-plugs.svg?branch=master)](https://travis-ci.org/deadtrickster/prometheus-plugs)  [![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_plugs/)
 
@@ -46,13 +46,20 @@ defmodule MyApp.MetricsExporter do
 end
 ```
 
+Call the `MyApp.MetricsExporter.setup/0` function when the application starts.
+
+```elixir
+# e.g. in `application.ex`
+MyApp.MetricsExporter.setup()
+```
+
 Then we add exporter to MyApp pipeline:
 
 ```elixir
 plug MyApp.MetricsExporter
 ```
 
-You can configure path, export format and Prometheus registry via `:prometheus` app environment. 
+You can configure path, export format and Prometheus registry via `:prometheus` app environment.
 For more information please see `Prometheus.PlugExporter` module documentation.
 
 Export endpoint can be secured using HTTP Basic Authentication:
