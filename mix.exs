@@ -1,22 +1,24 @@
 defmodule PrometheusPlugs.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/deadtrickster/prometheus-plugs"
   @version "1.1.5"
 
   def project do
     [
       app: :prometheus_plugs,
       version: @version,
-      elixir: "~> 1.0",
+      elixir: "~> 1.7",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
       package: package(),
       docs: [
-        main: "api-reference",
+        main: "readme",
         source_ref: "v#{@version}",
-        source_url: "https://github.com/deadtrickster/prometheus-plugs"
+        source_url: @source_url,
+        extras: ["README.md": [title: "Prometheus Plugs"]]
       ]
     ]
   end
@@ -36,7 +38,7 @@ defmodule PrometheusPlugs.Mixfile do
       maintainers: ["Ilya Khaprov"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/deadtrickster/prometheus-plugs",
+        "GitHub" => @source_url,
         "Prometheus.erl" => "https://hex.pm/packages/prometheus",
         "Prometheus.ex" => "https://hex.pm/packages/prometheus_ex",
         "Inets HTTPD Exporter" => "https://hex.pm/packages/prometheus_httpd",
@@ -49,12 +51,13 @@ defmodule PrometheusPlugs.Mixfile do
 
   defp deps do
     [
-      {:plug, "~> 1.0"},
-      {:ex_doc, "~> 0.11", only: :dev},
-      {:earmark, ">= 0.0.0", only: :dev},
-      {:prometheus_ex, "~> 1.1 or ~> 2.0 or ~> 3.0"},
       {:accept, "~> 0.1"},
-      {:prometheus_process_collector, "~> 1.1", optional: true}
+      {:plug, "~> 1.0"},
+      {:prometheus_ex, "~> 1.1 or ~> 2.0 or ~> 3.0"},
+      {:prometheus_process_collector, "~> 1.1", optional: true},
+
+      {:earmark, ">= 0.0.0", only: :dev},
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 end

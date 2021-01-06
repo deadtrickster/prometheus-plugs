@@ -1,7 +1,11 @@
 # Prometheus.io Plugs Instrumenter/Exporter
-[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs)
-[![Hex.pm](https://img.shields.io/hexpm/dt/prometheus_plugs.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_plugs)
-[![Build Status](https://travis-ci.org/deadtrickster/prometheus-plugs.svg?branch=master)](https://travis-ci.org/deadtrickster/prometheus-plugs)  [![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_plugs/)
+
+[![Build Status](https://travis-ci.org/deadtrickster/prometheus-plugs.svg?branch=master)](https://travis-ci.org/deadtrickster/prometheus-plugs)
+[![Module version](https://img.shields.io/hexpm/v/prometheus_plugs.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_plugs)
+[![Documentation](https://img.shields.io/badge/hex-docs-green.svg)](https://hexdocs.pm/prometheus_plugs/)
+[![Total Download](https://img.shields.io/hexpm/dt/prometheus_plugs.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_plugs)
+[![License](https://img.shields.io/hexpm/l/prometheus_plugs.svg?maxAge=259200)](https://github.com/deadtrickster/prometheus-plugs/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/deadtrickster/prometheus-plugs.svg)](https://github.com/deadtrickster/prometheus-plugs/commits/master)
 
 Elixir Plug integration for [prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
@@ -10,7 +14,7 @@ Quick introduction by [**@skosch**](https://github.com/skosch): [Monitoring Elix
  - IRC: #elixir-lang on Freenode;
  - [Slack](https://elixir-slackin.herokuapp.com/): #prometheus channel - [Browser](https://elixir-lang.slack.com/messages/prometheus) or App(slack://elixir-lang.slack.com/messages/prometheus).
 
-### Instrumentation
+## Instrumentation
 
 To instrument whole plug pipeline use `Prometheus.PlugPipelineInstrumenter`:
 
@@ -36,7 +40,7 @@ Both modules implement plug interface and `Prometheus.PlugInstrumenter` generate
 Instrumenters configured via `:prometheus` app environment. Please consult respective modules documentation on
 what options are available.
 
-### Exporting
+## Exporting
 
 To export metric we first have to create a plug that will serve scraping requests.
 
@@ -69,6 +73,7 @@ Export endpoint can be secured using HTTP Basic Authentication:
 ```
 
 ## Integrations / Collectors / Instrumenters
+
  - [Ecto collector](https://github.com/deadtrickster/prometheus-ecto)
  - [Plugs Instrumenter/Exporter](https://github.com/deadtrickster/prometheus-plugs)
  - [Elli middleware](https://github.com/elli-lib/elli_prometheus)
@@ -81,20 +86,20 @@ Export endpoint can be secured using HTTP Basic Authentication:
 
 The package can be installed as:
 
-  1. Add prometheus_plug to your list of dependencies in `mix.exs`:
-```
-        def deps do
-          [{:prometheus_plugs, "~> 1.1.1"}]
-        end
-```
+1.  Add `:prometheus_plug` to your list of dependencies in `mix.exs`:
+    ```elixir
+    def deps do
+      [{:prometheus_plugs, "~> 1.1.1"}]
+    end
+    ```
 
-  2. Ensure prometheus is started before your application:
-```
-        def application do
-          [applications: [:prometheus_plugs]]
-        end
-```
+2.  Ensure prometheus is started before your application:
+    ``` elixir
+    def application do
+      [applications: [:prometheus_plugs]]
+    end
+    ```
 
 ## License
 
-MIT
+This project is licensed under the MIT license. Copyright (c) 2016-present, Ilya Khaprov.

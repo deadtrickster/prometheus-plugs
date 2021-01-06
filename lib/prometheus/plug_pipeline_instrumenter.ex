@@ -26,24 +26,25 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   ### Metrics
 
   Currently maintains two metrics.
-   - `http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
-   - `http_request_duration_<duration_unit>` - The HTTP request latencies in <duration_unit>. This one is a histogram.
+
+    * `:http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
+    * `:http_request_duration_<duration_unit>` - The HTTP request latencies in
+      <duration_unit>. This one is a histogram.
 
   ### Configuration
 
-  Plug pipeline instrumenter can be configured via `PlugPipelineInstrumenter` (you should replace this with the name
-  of your plug) key of prometheus app env.
+  Plug pipeline instrumenter can be configured via `PlugPipelineInstrumenter`
+  (you should replace this with the name of your plug) key of prometheus app
+  env.
 
   All metrics support configurable labels:
 
-  ```
-   - status_code - http code;
-   - status_class - http code class, like "success", "redirect", "client-error", etc;
-   - method - http method;
-   - host - requested host;
-   - port - requested port;
-   - scheme - request scheme (like http or https).
-  ```
+    * `:status_code` - http code;
+    * `:status_class` - http code class, like "success", "redirect", "client-error", etc;
+    * `:method` - http method;
+    * `:host` - requested host;
+    * `:port` - requested port;
+    * `:scheme` - request scheme (like http or https).
 
   Default configuration:
 
@@ -58,17 +59,20 @@ defmodule Prometheus.PlugPipelineInstrumenter do
   ```
 
   Available duration units:
-   - microseconds;
-   - milliseconds;
-   - seconds;
-   - minutes;
-   - hours;
-   - days.
 
-  In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field value can be used as metric label.
-  Label value can be generated using custom function. In order to create a custom label simply provide a fun reference
-  as a key-value pair where key is a label name and value is either module name which exports `label_value/2` function
-  or `{module, fun/2}` tuple. By default your plug's `label_value` is called when label is unknown.
+    * microseconds;
+    * milliseconds;
+    * seconds;
+    * minutes;
+    * hours;
+    * days.
+
+  In fact almost any [Plug.Conn](https://hexdocs.pm/plug/Plug.Conn.html) field
+  value can be used as metric label.  Label value can be generated using custom
+  function. In order to create a custom label simply provide a fun reference as
+  a key-value pair where key is a label name and value is either module name
+  which exports `label_value/2` function or `{module, fun/2}` tuple. By default
+  your plug's `label_value` is called when label is unknown.
 
   ``` elixir
   defmodule PlugPipelineInstrumenter do
