@@ -2,56 +2,56 @@ defmodule Prometheus.PlugInstrumenter do
   @moduledoc """
   Helps you create a plug that instruments another plug(s).
 
-  Internally works like and uses Plug.Builder so can instrument many
+  Internally works like and uses `Plug.Builder` so can instrument many
   plugs at once. Just use regular plug macro!
 
   ### Usage
 
-  1. Define your instrumenter:
+  1.  Define your instrumenter:
 
-  ```elixir
-  defmodule EnsureAuthenticatedInstrumenter do
-    use Prometheus.PlugInstrumenter
+      ```elixir
+      defmodule EnsureAuthenticatedInstrumenter do
+        use Prometheus.PlugInstrumenter
 
-    plug Guardian.Plug.EnsureAuthenticated
+        plug Guardian.Plug.EnsureAuthenticated
 
-    def label_value(:authenticated, {conn, _}) do
-      conn.status != 401
-    end
-  end
-  ```
+        def label_value(:authenticated, {conn, _}) do
+          conn.status != 401
+        end
+      end
+      ```
 
-  2. Configuration:
+  2.  Configuration:
 
-  ```elixir
-  config :prometheus, EnsureAuthenticatedInstrumenter,
-    counter: :guardian_ensure_authenticated_total,
-    counter_help: "Total number of EnsureAuthenticated plug calls.",
-    histogram: :guardian_ensure_authenticated_duration_microseconds,
-    histogram_help: "Duration of EnsureAuthenticated plug calls.",
-    labels: [:authenticated]
-  ```
+      ```elixir
+      config :prometheus, EnsureAuthenticatedInstrumenter,
+        counter: :guardian_ensure_authenticated_total,
+        counter_help: "Total number of EnsureAuthenticated plug calls.",
+        histogram: :guardian_ensure_authenticated_duration_microseconds,
+        histogram_help: "Duration of EnsureAuthenticated plug calls.",
+        labels: [:authenticated]
+      ```
 
-  3. Call `EnsureAuthenticatedInstrumenter.setup/0` when application starts
+  3.  Call `EnsureAuthenticatedInstrumenter.setup/0` when application starts
   (e.g. supervisor setup):
 
-  ```elixir
-  EnsureAuthenticatedInstrumenter.setup()
-  ```
+      ```elixir
+      EnsureAuthenticatedInstrumenter.setup()
+      ```
 
-  4. Add `EnsureAuthenticatedInstrumenter` to your plug pipeline or replace
+  4.  Add `EnsureAuthenticatedInstrumenter` to your plug pipeline or replace
   `Guardian.Plug.EnsureAuthenticated` if it already present.
 
-  ```elixir:
-  plug EnsureAuthenticatedInstrumenter, handler: Guardian.Plug.ErrorHandler
-  ```
+      ```elixir:
+      plug EnsureAuthenticatedInstrumenter, handler: Guardian.Plug.ErrorHandler
+      ```
 
   As you can see you can transparently pass options to the underlying plug.
 
   ### Metrics
 
-  Currently PlugInstrumenter supports two metrics - counter for total calls count and
-  histogram for calls duration. Metric can be disabled by setting it's name to false:
+  Currently `PlugInstrumenter` supports two metrics - `:counter` for total calls count and
+  `:histogram` for calls duration. Metric can be disabled by setting it's name to false:
 
   ```elixir
   counter: false
@@ -61,23 +61,26 @@ defmodule Prometheus.PlugInstrumenter do
 
   ### Configuration
 
-  Plug pipeline instrumenter can be configured via `EnsureAuthenticatedInstrumenter` (you should replace this with the name
-  of your plug) key of prometheus app env.
+  Plug pipeline instrumenter can be configured via
+  `EnsureAuthenticatedInstrumenter` (you should replace this with the name of
+  your plug) key of prometheus app env.
 
   Mandatory keys:
-   - counter or histogram.
+    * `:counter` or;
+    * `:histogram`.
 
   Optional keys with defaults:
 
-   - registry - Prometheus registry for metrics (:default);
-   - counter - counter metric name (false);
-   - counter_help - help string for counter metric ("");
-   - histogram - histogram metric name (false);
-   - histogram_help - help string for histogram metric ("");
-   - histogram_buckets - histogram metric buckets (Prometheus.Contrib.HTTP.microseconds_duration_buckets());
-   - labels - labels for counter and histogram ([]);
-   - duration_units - duration units for the histogram, if histogram name already has known duration unit
-     this can be omitted (:undefined).
+    * `:registry` - Prometheus registry for metrics (:default);
+    * `:counter` - counter metric name (false);
+    * `:counter_help` - help string for counter metric ("");
+    * `:histogram` - histogram metric name (false);
+    * `:histogram_help` - help string for histogram metric ("");
+    * `:histogram_buckets` - histogram metric buckets
+      (Prometheus.Contrib.HTTP.microseconds_duration_buckets());
+    * `:labels` - labels for counter and histogram ([]);
+    * `:duration_units` - duration units for the histogram, if histogram name
+      already has known duration unit this can be omitted (:undefined).
 
   As noted above at least one metric name should be given. Of course you must tell what plug(s)
   to instrument.

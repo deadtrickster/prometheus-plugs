@@ -24,8 +24,9 @@ defmodule Prometheus.PlugExporter do
   ### Metrics
 
   Also maintains telemetry metrics:
-  - telemetry_scrape_duration_seconds
-  - telemetry_scrape_size_bytes
+
+    * `telemetry_scrape_duration_seconds`
+    * `telemetry_scrape_size_bytes`
 
   Do not forget to call `setup/0` before using plug, for example on application start!
 
