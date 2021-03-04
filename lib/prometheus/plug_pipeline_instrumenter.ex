@@ -31,6 +31,8 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     * `:http_request_duration_<duration_unit>` - The HTTP request latencies in
       <duration_unit>. This one is a histogram.
 
+  Also, you can change names with configuration. See "Default configuration" section.
+
   ### Configuration
 
   Plug pipeline instrumenter can be configured via `PlugPipelineInstrumenter`
@@ -55,7 +57,9 @@ defmodule Prometheus.PlugPipelineInstrumenter do
                        300_000, 500_000, 750_000, 1_000_000,
                        1_500_000, 2_000_000, 3_000_000],
     registry: :default,
-    duration_unit: :microseconds
+    duration_unit: :microseconds,
+    requests_total_metric_name: :http_requests_total,
+    request_duration_metric_base_name: :http_request_duration
   ```
 
   Available duration units:
@@ -102,7 +106,9 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     labels: [:status_class, :method, :host, :scheme],
     duration_buckets: Prometheus.Contrib.HTTP.microseconds_duration_buckets(),
     registry: :default,
-    duration_unit: :microseconds
+    duration_unit: :microseconds,
+    requests_total_metric_name: :http_requests_total,
+    request_duration_metric_base_name: :http_request_duration
 
   defmacro __using__(_opts) do
     module_name = __CALLER__.module
@@ -112,6 +118,9 @@ defmodule Prometheus.PlugPipelineInstrumenter do
     nlabels = normalize_labels(labels)
     registry = Config.registry(module_name)
     duration_unit = Config.duration_unit(module_name)
+    requests_total_metric_name = Config.requests_total_metric_name(module_name)
+    request_duration_metric_base_name = Config.request_duration_metric_base_name(module_name)
+    request_duration_metric_name = :"#{request_duration_metric_base_name}_#{duration_unit}"
 
     quote do
       @behaviour Plug
@@ -121,14 +130,14 @@ defmodule Prometheus.PlugPipelineInstrumenter do
 
       def setup() do
         Counter.declare(
-          name: :http_requests_total,
+          name: unquote(requests_total_metric_name),
           help: "Total number of HTTP requests made.",
           labels: unquote(nlabels),
           registry: unquote(registry)
         )
 
         Histogram.declare(
-          name: unquote(:"http_request_duration_#{duration_unit}"),
+          name: unquote(request_duration_metric_name),
           help: "The HTTP request latencies in #{unquote(duration_unit)}.",
           labels: unquote(nlabels),
           buckets: unquote(request_duration_buckets),
@@ -147,7 +156,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
 
           Counter.inc(
             registry: unquote(registry),
-            name: :http_requests_total,
+            name: unquote(requests_total_metric_name),
             labels: labels
           )
 
@@ -157,7 +166,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
           Histogram.observe(
             [
               registry: unquote(registry),
-              name: unquote(:"http_request_duration_#{duration_unit}"),
+              name: unquote(request_duration_metric_name),
               labels: labels
             ],
             diff
