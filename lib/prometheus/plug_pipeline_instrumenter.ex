@@ -27,7 +27,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
 
   Currently maintains two metrics.
 
-    * `:http_requests_total` - Total nubmer of HTTP requests made. This one is a counter.
+    * `:http_requests_total` - Total number of HTTP requests made. This one is a counter.
     * `:http_request_duration_<duration_unit>` - The HTTP request latencies in
       <duration_unit>. This one is a histogram.
 
