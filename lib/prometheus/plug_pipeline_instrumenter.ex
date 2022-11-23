@@ -152,7 +152,7 @@ defmodule Prometheus.PlugPipelineInstrumenter do
           )
 
           stop = :erlang.monotonic_time()
-          diff = stop - start
+          diff = convert_time_unit(stop - start, unquote(:"#{duration_unit}"))
 
           Histogram.observe(
             [
@@ -165,6 +165,36 @@ defmodule Prometheus.PlugPipelineInstrumenter do
 
           conn
         end)
+      end
+
+      @spec convert_time_unit(
+              integer(),
+              :microseconds | :milliseconds | :seconds | :minutes | :hours | :days
+            ) :: integer()
+      defp convert_time_unit(native_diff, duration_unit) do
+        case duration_unit do
+          :microseconds ->
+            :erlang.convert_time_unit(native_diff, :native, :microsecond)
+
+          :milliseconds ->
+            :erlang.convert_time_unit(native_diff, :native, :millisecond)
+
+          :seconds ->
+            :erlang.convert_time_unit(native_diff, :native, :second)
+
+          :minutes ->
+            :erlang.convert_time_unit(native_diff, :native, :second) |> Kernel./(60) |> round()
+
+          :hours ->
+            :erlang.convert_time_unit(native_diff, :native, :second)
+            |> Kernel./(60 * 60)
+            |> round()
+
+          :days ->
+            :erlang.convert_time_unit(native_diff, :native, :second)
+            |> Kernel./(60 * 60 * 24)
+            |> round()
+        end
       end
     end
   end
